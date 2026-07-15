@@ -3,7 +3,7 @@ import cv2
 import requests
 
 RECOGNIZE_URL = "http://localhost:8000/recognize"
-SEND_INTERVAL_SECONDS = 1.0  # 1 frame/seconde envoyée, pas 30 — suffisant et évite de saturer l'API
+SEND_INTERVAL_SECONDS = 1.0  
 
 
 def format_label(result: dict) -> str:
