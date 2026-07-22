@@ -41,11 +41,7 @@ def check_liveness(image_bgr: np.ndarray, bbox: list) -> bool:
 
 
 def recognize_face(file_bytes: bytes) -> dict:
-    """
-    BF-05 à BF-08 — Détecte, vérifie la vivacité et identifie TOUS les
-    visages présents dans l'image (pas seulement le premier), pour gérer
-    le cas de plusieurs personnes passant ensemble devant une caméra.
-    """
+
     image_rgb = bytes_to_image(file_bytes)
     face_locations = face_recognition.face_locations(image_rgb)
 
