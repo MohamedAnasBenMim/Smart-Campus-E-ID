@@ -1,10 +1,4 @@
-"""
-Client de test webcam — simule une caméra de zone en temps réel (BF-05).
-Gère maintenant plusieurs visages détectés simultanément.
 
-À exécuter directement sous Windows (PAS dans WSL).
-Installation : pip install opencv-python requests
-"""
 
 import time
 import cv2
@@ -15,7 +9,6 @@ SEND_INTERVAL_SECONDS = 1.0
 
 
 def format_lines(result: dict) -> list[str]:
-    """Une ligne de texte par visage détecté, plutôt qu'une seule ligne globale."""
     n = result.get("visages_detectes", 0)
     if n == 0:
         return ["Aucun visage détecté"]
