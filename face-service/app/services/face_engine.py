@@ -32,15 +32,7 @@ def compute_average_embedding(images_bytes: list[bytes]) -> list[float] | None:
 
 
 def check_liveness(image_bgr: np.ndarray, bbox: list) -> bool:
-    """
-    BF-06 — Vérifie la vivacité d'UN visage précis (bbox), via
-    Silent-Face-Anti-Spoofing.
 
-    Choix de sécurité assumé : en cas d'erreur technique (modèle non
-    chargé, bbox invalide...), on considère le visage comme NON vivant
-    plutôt que de laisser passer par défaut — mieux vaut une fausse
-    alerte à vérifier qu'une fraude non détectée à cause d'un bug.
-    """
     try:
         return liveness.is_real_face(image_bgr, bbox)
     except Exception as e:
