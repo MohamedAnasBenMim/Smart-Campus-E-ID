@@ -19,12 +19,7 @@ class FaceResult(BaseModel):
 
 
 class RecognizeResponse(BaseModel):
-    """
-    ⚠️ Changement de contrat par rapport à avant : la réponse contient
-    maintenant une LISTE de résultats (un par visage détecté), plutôt
-    qu'un seul résultat — nécessaire pour gérer plusieurs personnes
-    présentes en même temps devant une caméra.
-    """
+
     visages_detectes: int
     resultats: list[FaceResult]
 
