@@ -1,14 +1,15 @@
+from typing import Optional
+
 from pydantic import BaseModel
-from typing import Optional, Dict, List
 
 
 class EnrollResponse(BaseModel):
     subject_id: str
-    embedding: List[float]
+    embedding: list[float]
 
 
-class RecognizeResponse(BaseModel):
-    visage_detecte: bool
+class FaceResult(BaseModel):
+    """Résultat pour UN visage détecté sur l'image envoyée."""
     vivant: Optional[bool] = None
     resultat: Optional[str] = None
     subject_id: Optional[str] = None
@@ -17,8 +18,19 @@ class RecognizeResponse(BaseModel):
     raison: Optional[str] = None
 
 
+class RecognizeResponse(BaseModel):
+    """
+    ⚠️ Changement de contrat par rapport à avant : la réponse contient
+    maintenant une LISTE de résultats (un par visage détecté), plutôt
+    qu'un seul résultat — nécessaire pour gérer plusieurs personnes
+    présentes en même temps devant une caméra.
+    """
+    visages_detectes: int
+    resultats: list[FaceResult]
+
+
 class LoadEmbeddingsRequest(BaseModel):
-    embeddings: Dict[str, List[float]]
+    embeddings: dict[str, list[float]]
 
 
 class HealthResponse(BaseModel):
