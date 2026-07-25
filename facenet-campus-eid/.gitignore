@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+data/enrolled_faces/*
+data/embeddings/*
+data/events/*
+!data/enrolled_faces/.gitkeep
+!data/embeddings/.gitkeep
+!data/events/.gitkeep
+
