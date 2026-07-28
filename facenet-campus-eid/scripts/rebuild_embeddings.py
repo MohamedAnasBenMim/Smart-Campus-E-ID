@@ -67,7 +67,13 @@ def main() -> int:
         metadata["number_of_samples"] = len(embeddings)
         metadata["embedding_model"] = config.EMBEDDING_MODEL_NAME
         average_embedding = l2_normalize(np.mean(np.vstack(embeddings), axis=0))
-        storage.save_user_embedding(user_id, average_embedding, metadata, overwrite=True)
+        storage.save_user_embedding(
+            user_id,
+            average_embedding,
+            metadata,
+            sample_embeddings=np.vstack(embeddings),
+            overwrite=True,
+        )
         rebuilt += 1
         LOGGER.info("Rebuilt embedding for %s from %d images", user_id, len(embeddings))
 
@@ -77,4 +83,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

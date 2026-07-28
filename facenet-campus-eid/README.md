@@ -70,6 +70,8 @@ Duplicate user IDs are blocked unless `--overwrite` is passed.
 
 Recognition supports multiple faces per frame. Unknown live faces are logged as `unknown_person`, not spoof attempts. The displayed score is Euclidean `distance`, not a confidence percentage.
 
+Each enrollment NPZ stores both the averaged embedding and the individual sample embeddings. Recognition compares a live face against the closest stored sample for each user, which is more tolerant of pose, lighting, glasses, and other normal variation than comparing only against one averaged vector. Older NPZ files that contain only an averaged embedding still load, but re-enrolling or running `python scripts/rebuild_embeddings.py` upgrades them to multi-sample matching.
+
 `RECOGNITION_DISTANCE_THRESHOLD` starts at a reasonable prototype value, but it must be calibrated with local validation data before any real access-control use.
 
 ## Folder Structure

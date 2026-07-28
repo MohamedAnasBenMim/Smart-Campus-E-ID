@@ -30,6 +30,7 @@ class StoredUser:
 
     user_id: str
     embedding: np.ndarray
+    sample_embeddings: np.ndarray
     metadata: dict[str, Any]
 
 
@@ -56,17 +57,19 @@ class StorageService:
         embedding: np.ndarray,
         metadata: dict[str, Any],
         *,
+        sample_embeddings: np.ndarray | None = None,
         overwrite: bool = False,
     ) -> None:
-        """Save one user's average embedding and metadata."""
+        """Save one user's average embedding, sample embeddings, and metadata."""
 
         self._validate_user_id(user_id)
         if self.user_exists(user_id) and not overwrite:
             raise DuplicateUserError(f"user_id already exists: {user_id}")
 
         embedding = self._validate_embedding(embedding)
+        samples = self._validate_sample_embeddings(sample_embeddings, fallback=embedding)
         self.embedding_path(user_id).parent.mkdir(parents=True, exist_ok=True)
-        np.savez_compressed(self.embedding_path(user_id), embedding=embedding)
+        np.savez_compressed(self.embedding_path(user_id), embedding=embedding, sample_embeddings=samples)
         self.save_metadata(user_id, metadata)
 
     def load_user_embedding(self, user_id: str) -> np.ndarray:
@@ -87,6 +90,31 @@ class StorageService:
         except Exception as exc:
             raise StorageError(f"could not load embedding from {path}: {exc}") from exc
 
+    def load_user_sample_embeddings(self, user_id: str) -> np.ndarray:
+        """Load all stored sample embeddings for one user.
+
+        Older enrollment files may contain only the averaged embedding. In that
+        case, return a one-row matrix so recognition stays backward compatible.
+        """
+
+        self._validate_user_id(user_id)
+        path = self.embedding_path(user_id)
+        if not path.exists():
+            raise StorageError(f"embedding file does not exist: {path}")
+
+        try:
+            with np.load(path) as data:
+                if "sample_embeddings" in data:
+                    return self._validate_sample_embeddings(data["sample_embeddings"])
+                if "embedding" not in data:
+                    raise StorageError(f"missing embedding arrays in {path}")
+                embedding = self._validate_embedding(data["embedding"])
+                return embedding.reshape(1, -1)
+        except StorageError:
+            raise
+        except Exception as exc:
+            raise StorageError(f"could not load sample embeddings from {path}: {exc}") from exc
+
     def load_all_embeddings(self) -> dict[str, StoredUser]:
         """Load all valid embeddings, skipping corrupted entries with a warning."""
 
@@ -95,8 +123,14 @@ class StorageService:
             user_id = path.stem
             try:
                 embedding = self.load_user_embedding(user_id)
+                sample_embeddings = self.load_user_sample_embeddings(user_id)
                 metadata = self.load_metadata(user_id)
-                users[user_id] = StoredUser(user_id=user_id, embedding=embedding, metadata=metadata)
+                users[user_id] = StoredUser(
+                    user_id=user_id,
+                    embedding=embedding,
+                    sample_embeddings=sample_embeddings,
+                    metadata=metadata,
+                )
             except StorageError as exc:
                 LOGGER.warning("Skipping corrupted enrollment for %s: %s", user_id, exc)
         return users
@@ -172,3 +206,26 @@ class StorageService:
             raise StorageError("embedding contains NaN or infinite values")
         return array
 
+    @staticmethod
+    def _validate_sample_embeddings(
+        sample_embeddings: np.ndarray | None,
+        *,
+        fallback: np.ndarray | None = None,
+    ) -> np.ndarray:
+        if sample_embeddings is None:
+            if fallback is None:
+                raise StorageError("sample embeddings are missing")
+            return StorageService._validate_embedding(fallback).reshape(1, -1)
+
+        array = np.asarray(sample_embeddings, dtype=np.float32)
+        if array.ndim == 1:
+            array = array.reshape(1, -1)
+        if array.ndim != 2 or array.shape[1] != EMBEDDING_DIMENSION:
+            raise StorageError(
+                f"sample embeddings must have shape (n, {EMBEDDING_DIMENSION}), got {array.shape}"
+            )
+        if array.shape[0] < 1:
+            raise StorageError("sample embeddings must contain at least one row")
+        if not np.isfinite(array).all():
+            raise StorageError("sample embeddings contain NaN or infinite values")
+        return array

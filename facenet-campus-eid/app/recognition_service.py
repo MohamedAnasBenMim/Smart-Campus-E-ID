@@ -48,7 +48,7 @@ def euclidean_distance(left: np.ndarray, right: np.ndarray) -> float:
 
 
 class FaceRecognitionService:
-    """Find the nearest enrolled embedding and apply the Unknown threshold."""
+    """Find the nearest enrolled sample embedding and apply the Unknown threshold."""
 
     def __init__(self, threshold: float = RECOGNITION_DISTANCE_THRESHOLD) -> None:
         self.threshold = threshold
@@ -62,7 +62,7 @@ class FaceRecognitionService:
         best_user: StoredUser | None = None
         best_distance = math.inf
         for user in enrolled_users.values():
-            distance = euclidean_distance(query_embedding, user.embedding)
+            distance = nearest_embedding_distance(query_embedding, user.sample_embeddings)
             if distance < best_distance:
                 best_user = user
                 best_distance = distance
@@ -84,6 +84,19 @@ class FaceRecognitionService:
             known=True,
             metadata=best_user.metadata,
         )
+
+
+def nearest_embedding_distance(query_embedding: np.ndarray, enrolled_embeddings: np.ndarray) -> float:
+    """Return the closest Euclidean distance from a query to one or more enrollment embeddings."""
+
+    query = np.asarray(query_embedding, dtype=np.float32)
+    enrolled = np.asarray(enrolled_embeddings, dtype=np.float32)
+    if enrolled.ndim == 1:
+        return euclidean_distance(query, enrolled)
+    if enrolled.ndim != 2:
+        raise ValueError(f"enrolled embeddings must be 1D or 2D, got {enrolled.ndim}D")
+    distances = np.linalg.norm(enrolled - query.reshape(1, -1), axis=1)
+    return float(np.min(distances))
 
 
 @dataclass
@@ -206,4 +219,3 @@ def _match_radius(left: tuple[int, int, int, int], right: tuple[int, int, int, i
     width = max(abs(left[2] - left[0]), abs(right[2] - right[0]))
     height = max(abs(left[3] - left[1]), abs(right[3] - right[1]))
     return max(50.0, 0.6 * math.hypot(width, height))
-

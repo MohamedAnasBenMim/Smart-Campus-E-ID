@@ -154,7 +154,13 @@ def main() -> int:
             "created_at": datetime.now(timezone.utc).isoformat(),
             "embedding_model": config.EMBEDDING_MODEL_NAME,
         }
-        storage.save_user_embedding(args.user_id, average_embedding, metadata, overwrite=args.overwrite)
+        storage.save_user_embedding(
+            args.user_id,
+            average_embedding,
+            metadata,
+            sample_embeddings=np.vstack(embeddings),
+            overwrite=args.overwrite,
+        )
         LOGGER.info("Enrollment success for %s (%s)", args.user_id, args.name)
         return 0
     except DuplicateUserError as exc:

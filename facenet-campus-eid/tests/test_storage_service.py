@@ -10,13 +10,16 @@ from app.storage_service import DuplicateUserError, StorageService
 def test_saving_and_loading_embeddings(tmp_path) -> None:
     service = _storage(tmp_path)
     embedding = _embedding()
+    sample_embeddings = np.vstack([embedding, _embedding(1)])
     metadata = {"name": "Mohamed Anas", "role": "student", "number_of_samples": 10}
 
-    service.save_user_embedding("STU001", embedding, metadata)
+    service.save_user_embedding("STU001", embedding, metadata, sample_embeddings=sample_embeddings)
 
     loaded_embedding = service.load_user_embedding("STU001")
+    loaded_samples = service.load_user_sample_embeddings("STU001")
     loaded_metadata = service.load_metadata("STU001")
     assert np.allclose(loaded_embedding, embedding)
+    assert np.allclose(loaded_samples, sample_embeddings)
     assert loaded_metadata["user_id"] == "STU001"
     assert loaded_metadata["name"] == "Mohamed Anas"
 
@@ -51,6 +54,18 @@ def test_corrupted_file_handling_skips_bad_entry(tmp_path) -> None:
     assert list(loaded) == ["STU001"]
 
 
+def test_loading_old_single_embedding_file_uses_average_as_only_sample(tmp_path) -> None:
+    service = _storage(tmp_path)
+    embedding = _embedding()
+    service.embedding_path("STU001").parent.mkdir(parents=True, exist_ok=True)
+    np.savez_compressed(service.embedding_path("STU001"), embedding=embedding)
+
+    loaded_samples = service.load_user_sample_embeddings("STU001")
+
+    assert loaded_samples.shape == (1, 512)
+    assert np.allclose(loaded_samples[0], embedding)
+
+
 def _storage(tmp_path) -> StorageService:
     settings = AppSettings(
         project_root=tmp_path,
@@ -66,4 +81,3 @@ def _embedding(index: int = 0) -> np.ndarray:
     embedding = np.zeros(512, dtype=np.float32)
     embedding[index] = 1.0
     return embedding
-
