@@ -1,0 +1,40 @@
+version: "3.9"
+
+services:
+
+  mongo:
+    image: mongo:8
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongodata:/data/db
+    networks:
+      - smart-campus-net
+
+  face-service:
+    build: ./face-service
+    ports:
+      - "8000:8000"
+    networks:
+      - smart-campus-net
+
+  backend:
+    build: ./backend
+    environment:
+      - SPRING_DATA_MONGODB_HOST=mongo
+      - SPRING_DATA_MONGODB_PORT=27017
+      - SPRING_DATA_MONGODB_DATABASE=smartcampus
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongo
+      - face-service
+    networks:
+      - smart-campus-net
+
+networks:
+  smart-campus-net:
+    driver: bridge
+
+volumes:
+  mongodata:

@@ -16,6 +16,7 @@ class FaceResult(BaseModel):
     confiance: Optional[float] = None
     similarite_max: Optional[float] = None
     raison: Optional[str] = None
+    avertissement: Optional[str] = None
 
 
 class RecognizeResponse(BaseModel):
