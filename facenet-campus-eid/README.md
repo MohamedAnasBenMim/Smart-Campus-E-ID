@@ -54,6 +54,21 @@ Run webcam recognition:
 python scripts/recognize_webcam.py
 ```
 
+Run face detection on recorded classroom videos:
+
+```bash
+python scripts/recognize_video.py --source videos --detect-only --min-face-size 40
+```
+
+Run full recognition on recorded classroom videos and save annotated MP4 files:
+
+```bash
+python scripts/recognize_video.py \
+  --source videos \
+  --output outputs \
+  --min-face-size 40
+```
+
 Rebuild embeddings from saved enrollment images:
 
 ```bash
@@ -71,6 +86,8 @@ Duplicate user IDs are blocked unless `--overwrite` is passed.
 Recognition supports multiple faces per frame. Unknown live faces are logged as `unknown_person`, not spoof attempts. The displayed score is Euclidean `distance`, not a confidence percentage.
 
 Each enrollment NPZ stores both the averaged embedding and the individual sample embeddings. Recognition compares a live face against the closest stored sample for each user, which is more tolerant of pose, lighting, glasses, and other normal variation than comparing only against one averaged vector. Older NPZ files that contain only an averaged embedding still load, but re-enrolling or running `python scripts/rebuild_embeddings.py` upgrades them to multi-sample matching.
+
+For classroom videos, start with `--detect-only` to confirm that faces are visible enough. If faces are far from the camera, lower `--min-face-size` to `40` or `30`. Full recognition can identify only people who were enrolled previously; everyone else should remain `Unknown`.
 
 `RECOGNITION_DISTANCE_THRESHOLD` starts at a reasonable prototype value, but it must be calibrated with local validation data before any real access-control use.
 
