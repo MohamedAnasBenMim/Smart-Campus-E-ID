@@ -48,6 +48,16 @@ python scripts/enroll_user.py \
   --role student
 ```
 
+Enroll a user from existing image files:
+
+```bash
+python scripts/enroll_from_images.py \
+  --user-id TEA001 \
+  --name "Teacher Name" \
+  --role teacher \
+  --images enrollment_images/teacher
+```
+
 Run webcam recognition:
 
 ```bash
@@ -69,6 +79,16 @@ python scripts/recognize_video.py \
   --min-face-size 40
 ```
 
+Run recognition on still test images and save annotated images:
+
+```bash
+python scripts/recognize_images.py \
+  --source test_images/teacher \
+  --output outputs/image_tests \
+  --min-face-size 40 \
+  --threshold 1.05
+```
+
 Rebuild embeddings from saved enrollment images:
 
 ```bash
@@ -78,6 +98,8 @@ python scripts/rebuild_embeddings.py
 ## Enrollment Notes
 
 Enrollment captures 10 valid samples by default. Press `SPACE` to capture only when the on-screen quality status is ready. Press `Q` to quit. The app asks for pose and expression variation, including straight, slight left, slight right, upward, downward, neutral expression, and slight smile.
+
+Image-based enrollment accepts one or more image files or folders. Each accepted image must contain exactly one confident face. Use `--overwrite` to replace an existing user ID. If the images are from classroom videos and the face is small, try `--min-face-size 40`; use `--allow-low-quality` only for proof-of-concept testing.
 
 Duplicate user IDs are blocked unless `--overwrite` is passed.
 

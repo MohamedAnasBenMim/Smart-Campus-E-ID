@@ -10,6 +10,10 @@ data/events/*
 !data/enrolled_faces/.gitkeep
 !data/embeddings/.gitkeep
 !data/events/.gitkeep
+enrollment_images/*
+!enrollment_images/.gitkeep
+test_images/*
+!test_images/.gitkeep
 videos/*
 !videos/.gitkeep
 outputs/*
