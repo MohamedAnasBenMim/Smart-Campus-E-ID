@@ -13,10 +13,22 @@ public class FaceServiceResult {
     @JsonProperty("visages_detectes")
     private int visagesDetectes;
 
+    @JsonProperty("personnes_detectees")
+    private int personnesDetectees;
+
+    @JsonProperty("presence_non_identifiee")
+    private boolean presenceNonIdentifiee;
+
     private List<FaceResultItem> resultats;
 
     public int getVisagesDetectes() { return visagesDetectes; }
     public void setVisagesDetectes(int visagesDetectes) { this.visagesDetectes = visagesDetectes; }
+
+    public int getPersonnesDetectees() { return personnesDetectees; }
+    public void setPersonnesDetectees(int personnesDetectees) { this.personnesDetectees = personnesDetectees; }
+
+    public boolean isPresenceNonIdentifiee() { return presenceNonIdentifiee; }
+    public void setPresenceNonIdentifiee(boolean presenceNonIdentifiee) { this.presenceNonIdentifiee = presenceNonIdentifiee; }
 
     public List<FaceResultItem> getResultats() { return resultats; }
     public void setResultats(List<FaceResultItem> resultats) { this.resultats = resultats; }

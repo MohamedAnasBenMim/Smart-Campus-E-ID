@@ -4,6 +4,7 @@ import com.smartcampus.backend.dto.RegleAccesRequest;
 import com.smartcampus.backend.model.RegleAcces;
 import com.smartcampus.backend.repository.RegleAccesRepository;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalTime;
@@ -24,6 +25,7 @@ public class RegleAccesController {
         return regleAccesRepository.findAll();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public RegleAcces creer(@Valid @RequestBody RegleAccesRequest request) {
         RegleAcces regle = new RegleAcces();
@@ -34,6 +36,7 @@ public class RegleAccesController {
         return regleAccesRepository.save(regle);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public void supprimer(@PathVariable String id) {
         regleAccesRepository.deleteById(id);

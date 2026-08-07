@@ -20,11 +20,22 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * BF-08 / BF-09 — Reçoit une frame + une zone, appelle le service de
+ * reconnaissance, croise le résultat avec les règles d'accès, décide,
+ * puis journalise systématiquement.
+ *
+ * AJOUT IMPORTANT : gère maintenant le cas "présence détectée sans visage
+ * exploitable" (ex. personne de dos) — auparavant, ce cas ne générait
+ * AUCUN événement ni alerte, un vrai angle mort de sécurité identifié
+ * lors des tests. Le service Python détecte la silhouette (HOG) même sans
+ * visage visible ; ce service traduit ça en une alerte concrète.
+ */
 @Service
 public class AccessDecisionService {
 
     private static final Set<String> RESULTATS_IGNORES = Set.of(
-            "detection_incertaine", "angle_trop_marque", "visage_trop_petit"
+            "detection_incertaine", "angle_trop_marque"
     );
 
     private final FaceServiceClient faceServiceClient;
@@ -53,7 +64,7 @@ public class AccessDecisionService {
 
         for (FaceServiceResult.FaceResultItem face : result.getResultats()) {
             if (RESULTATS_IGNORES.contains(face.getResultat())) {
-                continue; // détection trop incertaine, on n'en fait rien
+                continue;
             }
 
             if ("spoof_detecte".equals(face.getResultat())) {
@@ -67,8 +78,15 @@ public class AccessDecisionService {
             }
 
             if ("reconnu".equals(face.getResultat())) {
-                decisions.add(handleReconnu(face.getSubjectId(), zoneId));
+                decisions.add(handleReconnu(face.getSubjectId(), zoneId, face.getAvertissement()));
             }
+        }
+
+        // NOUVEAU : silhouette détectée sans visage exploitable pour l'identifier
+        // (personne de dos, visage masqué...). Avant cet ajout, ce cas ne
+        // générait aucun événement ni alerte — un vrai trou de sécurité.
+        if (result.isPresenceNonIdentifiee()) {
+            decisions.add(handlePresenceNonIdentifiee(zoneId, result.getPersonnesDetectees(), result.getVisagesDetectes()));
         }
 
         return decisions;
@@ -86,14 +104,41 @@ public class AccessDecisionService {
         return new AccessDecision(null, null, zoneId, "REFUSE", evt.getRaison());
     }
 
-    private AccessDecision handleReconnu(String personneId, String zoneId) {
+    /**
+     * NOUVEAU — cas "présence détectée, identité inconnue" : quelqu'un a été
+     * repéré (silhouette) mais aucun visage n'a pu confirmer qui, ni même
+     * tenter la reconnaissance. Traité comme un refus + alerte, exactement
+     * comme "inconnu", pour ne jamais laisser ce cas silencieux.
+     */
+    private AccessDecision handlePresenceNonIdentifiee(String zoneId, int personnesDetectees, int visagesDetectes) {
+        String raison = String.format(
+                "%d personne(s) détectée(s) mais identité confirmée pour %d visage(s) seulement — présence non identifiée",
+                personnesDetectees, visagesDetectes
+        );
+        EvenementAcces evt = journaliser(null, zoneId, "REFUSE", raison);
+        creerAlerte("PRESENCE_NON_IDENTIFIEE", evt.getId());
+        return new AccessDecision(null, null, zoneId, "REFUSE", raison);
+    }
+
+    private AccessDecision handleReconnu(String personneId, String zoneId, String avertissement) {
         Optional<Personne> personneOpt = personneRepository.findById(personneId);
         if (personneOpt.isEmpty()) {
-            // Cas limite : reconnu par le service IA mais absent de notre base
-            // (désynchronisation cache Python / MongoDB) — traité comme inconnu.
             return handleInconnu(zoneId);
         }
         Personne personne = personneOpt.get();
+
+        // NOUVEAU : une correspondance sur un visage à fiabilité réduite (ex. trop
+        // petit — rappel : ~78% de précision à 15px contre ~98% à 45px) n'accorde
+        // JAMAIS l'accès automatiquement, même si la règle zone/horaire serait valide.
+        // On préfère une vérification humaine à un accès basé sur une identité
+        // statistiquement incertaine. L'identité probable reste indiquée, pour aider
+        // le surveillant, mais le statut est REFUSE.
+        if (avertissement != null) {
+            String raison = "identité probable (" + personne.getNom() + ") mais confiance réduite : " + avertissement;
+            EvenementAcces evt = journaliser(personneId, zoneId, "REFUSE", raison);
+            creerAlerte("IDENTITE_A_CONFIRMER", evt.getId());
+            return new AccessDecision(personneId, personne.getNom(), zoneId, "REFUSE", raison);
+        }
 
         Optional<RegleAcces> regleOpt = regleAccesRepository.findByPersonneIdAndZoneId(personneId, zoneId);
         if (regleOpt.isEmpty()) {

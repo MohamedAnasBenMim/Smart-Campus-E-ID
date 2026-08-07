@@ -10,6 +10,7 @@ class EnrollResponse(BaseModel):
 
 class FaceResult(BaseModel):
     """Résultat pour UN visage détecté sur l'image envoyée."""
+    bbox: Optional[list[int]] = None  # [left, top, width, height] en pixels
     vivant: Optional[bool] = None
     resultat: Optional[str] = None
     subject_id: Optional[str] = None
@@ -21,6 +22,8 @@ class FaceResult(BaseModel):
 
 class RecognizeResponse(BaseModel):
     visages_detectes: int
+    personnes_detectees: int
+    presence_non_identifiee: bool
     resultats: list[FaceResult]
 
 

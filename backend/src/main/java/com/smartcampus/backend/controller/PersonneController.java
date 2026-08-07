@@ -5,6 +5,7 @@ import com.smartcampus.backend.repository.PersonneRepository;
 import com.smartcampus.backend.service.FaceServiceClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -24,6 +25,7 @@ public class PersonneController {
         this.faceServiceClient = faceServiceClient;
     }
 
+    // Consultation : ouverte à Admin ET Surveillant (juste besoin d'être connecté)
     @GetMapping
     public List<Personne> lister() {
         return personneRepository.findAll();
@@ -35,20 +37,23 @@ public class PersonneController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Personne introuvable"));
     }
 
-    /**
-     * BF-01 / BF-02 — Crée un profil : enregistre nom/rôle, ET déclenche
-     * l'appel au service Python pour calculer l'embedding à partir des photos.
-     */
+    /** BF-01 / BF-02 — réservé à l'Admin. */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Personne creer(
             @RequestParam String nom,
+            @RequestParam(required = false) String prenom,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String telephone,
             @RequestParam String role,
             @RequestParam("images") List<MultipartFile> images
     ) throws IOException {
         Personne personne = new Personne();
         personne.setNom(nom);
+        personne.setPrenom(prenom);
+        personne.setEmail(email);
+        personne.setTelephone(telephone);
         personne.setRole(role);
-        // Sauvegarde d'abord pour obtenir un id, utilisé comme subject_id côté service IA
         personne = personneRepository.save(personne);
 
         List<Double> embedding = faceServiceClient.enroll(personne.getId(), images);
@@ -56,18 +61,23 @@ public class PersonneController {
         return personneRepository.save(personne);
     }
 
-    /** BF-04 — Modifier le rôle ou le statut (actif/inactif) d'un profil. */
+    /** BF-04 — réservé à l'Admin. */
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public Personne modifier(@PathVariable String id, @RequestBody Personne modifications) {
         Personne personne = personneRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Personne introuvable"));
         if (modifications.getNom() != null) personne.setNom(modifications.getNom());
+        if (modifications.getPrenom() != null) personne.setPrenom(modifications.getPrenom());
+        if (modifications.getEmail() != null) personne.setEmail(modifications.getEmail());
+        if (modifications.getTelephone() != null) personne.setTelephone(modifications.getTelephone());
         if (modifications.getRole() != null) personne.setRole(modifications.getRole());
         if (modifications.getStatut() != null) personne.setStatut(modifications.getStatut());
         return personneRepository.save(personne);
     }
 
-    /** BF-04 — Suppression d'un profil. */
+    /** BF-04 — réservé à l'Admin. */
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public void supprimer(@PathVariable String id) {
         personneRepository.deleteById(id);
