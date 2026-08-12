@@ -1,0 +1,79 @@
+<mat-sidenav-container class="shell-container">
+  <mat-sidenav mode="side" opened class="sidenav">
+    <div class="sidenav-brand">
+      <svg viewBox="0 0 60 60" class="seal-svg">
+        <circle cx="30" cy="30" r="28" fill="none" stroke="#9ca3b0" stroke-width="1.5" />
+        <circle cx="30" cy="30" r="24" fill="none" stroke="#9ca3b0" stroke-width="0.75" opacity="0.6" />
+        <path
+          d="M30 16 L38 20 V30 C38 37 34 41.5 30 44 C26 41.5 22 37 22 30 V20 Z"
+          fill="none"
+          stroke="#a89bf0"
+          stroke-width="1.8"
+          stroke-linejoin="round"
+        />
+      </svg>
+      <div>
+        <div class="brand-name">Smart Campus</div>
+        <div class="brand-suffix">E-ID</div>
+      </div>
+    </div>
+
+    <mat-nav-list class="nav-list">
+      @for (item of menuVisible; track item.route) {
+        <a
+          mat-list-item
+          [routerLink]="item.route"
+          routerLinkActive="active-link"
+          class="nav-item"
+        >
+          <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+          <span matListItemTitle>{{ item.label }}</span>
+          @if (item.route === '/alertes' && alertesNonTraitees() > 0) {
+            <span class="nav-badge">{{ alertesNonTraitees() }}</span>
+          }
+        </a>
+      }
+    </mat-nav-list>
+
+    <div class="sidenav-footer">
+      <div class="role-badge" [class.role-admin]="auth.isAdmin()">
+        {{ auth.getCurrentUser()?.role }}
+      </div>
+    </div>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <mat-toolbar class="topbar">
+      <span class="spacer"></span>
+
+      <button mat-icon-button class="theme-toggle" (click)="theme.basculer()" [attr.aria-label]="'Changer de thème'">
+        <mat-icon>{{ theme.sombre() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+      </button>
+
+      <span class="topbar-clock">
+        <mat-icon>schedule</mat-icon>
+        {{ formattedTime() }}
+      </span>
+
+      <button mat-icon-button [matMenuTriggerFor]="userMenu" class="user-menu-trigger">
+        <span class="avatar">{{ initiales }}</span>
+      </button>
+      <mat-menu #userMenu="matMenu">
+        <div class="user-menu-header">
+          <div class="user-menu-name">
+            {{ auth.getCurrentUser()?.prenom }} {{ auth.getCurrentUser()?.nom }}
+          </div>
+          <div class="user-menu-role">{{ auth.getCurrentUser()?.role }}</div>
+        </div>
+        <button mat-menu-item (click)="auth.logout()">
+          <mat-icon>logout</mat-icon>
+          <span>Se déconnecter</span>
+        </button>
+      </mat-menu>
+    </mat-toolbar>
+
+    <main class="page-content">
+      <router-outlet></router-outlet>
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

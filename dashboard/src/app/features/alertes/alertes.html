@@ -1,0 +1,67 @@
+<div class="alertes-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Supervision</p>
+      <h1 class="page-title">Alertes</h1>
+    </div>
+    <div class="filtres">
+      <button class="filtre-btn" [class.actif]="filtre() === 'NON_TRAITEE'" (click)="filtre.set('NON_TRAITEE')">
+        Non traitées
+      </button>
+      <button class="filtre-btn" [class.actif]="filtre() === 'TOUTES'" (click)="filtre.set('TOUTES')">
+        Toutes
+      </button>
+    </div>
+  </header>
+
+  @if (chargement()) {
+    <p class="loading-state">Chargement...</p>
+  } @else if (alertesAffichees.length === 0) {
+    <div class="empty-state">
+      <mat-icon>check_circle</mat-icon>
+      <p>{{ filtre() === 'NON_TRAITEE' ? 'Aucune alerte en attente — tout est calme.' : 'Aucune alerte enregistrée.' }}</p>
+    </div>
+  } @else {
+    <div class="alertes-list">
+      @for (a of alertesAffichees; track a.id) {
+        <div class="alerte-card" [class.traitee]="a.statut === 'TRAITEE'">
+          @if (a.capturePhoto) {
+            <div class="alerte-capture-wrapper">
+              <img [src]="a.capturePhoto" alt="Capture au moment de l'alerte" class="alerte-capture" />
+              <div class="alerte-badge-type">
+                <mat-icon>{{ icone(a.type) }}</mat-icon>
+              </div>
+            </div>
+          } @else {
+            <div class="alerte-icone">
+              <mat-icon>{{ icone(a.type) }}</mat-icon>
+            </div>
+          }
+
+          <div class="alerte-corps">
+            <div class="alerte-titre">{{ libelle(a.type) }}</div>
+            <div class="alerte-meta">{{ a.horodatage | date: 'dd/MM/yyyy à HH:mm' }}</div>
+
+            @if (a.statut === 'TRAITEE' && a.commentaireTraitement) {
+              <div class="alerte-traitement">
+                <mat-icon>check_circle</mat-icon>
+                <div>
+                  <span class="traitement-label">Traitée par {{ a.traitePar }}</span>
+                  <p>{{ a.commentaireTraitement }}</p>
+                </div>
+              </div>
+            }
+          </div>
+
+          @if (a.statut === 'NON_TRAITEE') {
+            <button mat-flat-button class="btn-primary btn-traiter" (click)="ouvrirTraitement(a)">
+              Traiter
+            </button>
+          } @else {
+            <span class="statut-badge">Traitée</span>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

@@ -1,0 +1,51 @@
+<div class="regles-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Contrôle d'accès</p>
+      <h1 class="page-title">Règles d'accès</h1>
+    </div>
+    <button mat-flat-button class="btn-primary" [disabled]="!peutCreer()" (click)="ouvrirCreation()">
+      <mat-icon>add_task</mat-icon>
+      Nouvelle règle
+    </button>
+  </header>
+
+  @if (!peutCreer() && !chargement()) {
+    <div class="warning-banner">
+      <mat-icon>info</mat-icon>
+      Créez d'abord au moins une personne et une zone avant de définir une règle d'accès.
+    </div>
+  }
+
+  @if (chargement()) {
+    <p class="loading-state">Chargement...</p>
+  } @else if (regles().length === 0) {
+    <div class="empty-state">
+      <mat-icon>rule</mat-icon>
+      <p>Aucune règle d'accès définie pour l'instant.</p>
+    </div>
+  } @else {
+    <div class="regles-list">
+      @for (r of regles(); track r.id) {
+        <div class="regle-card">
+          <div class="regle-personne">
+            <mat-icon>person</mat-icon>
+            {{ nomPersonne(r.personneId) }}
+          </div>
+          <mat-icon class="regle-fleche">arrow_forward</mat-icon>
+          <div class="regle-zone">
+            <mat-icon>place</mat-icon>
+            {{ nomZone(r.zoneId) }}
+          </div>
+          <div class="regle-horaire">
+            <mat-icon>schedule</mat-icon>
+            {{ r.horaireDebut.substring(0, 5) }} — {{ r.horaireFin.substring(0, 5) }}
+          </div>
+          <button mat-icon-button class="delete-button" (click)="supprimer(r)">
+            <mat-icon>delete_outline</mat-icon>
+          </button>
+        </div>
+      }
+    </div>
+  }
+</div>

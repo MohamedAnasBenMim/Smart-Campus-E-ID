@@ -1,1 +1,237 @@
-/* You can add global styles to this file, and also import other style files */
+// ============================================================
+// Theming Angular Material (Material 3) — palette violette,
+// inspirée du logo BE CARTH AI Consulting.
+// ============================================================
+@use '@angular/material' as mat;
+
+html {
+  height: 100%;
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$violet-palette,
+        tertiary: mat.$magenta-palette,
+      ),
+      typography: Inter,
+      density: 0,
+    )
+  );
+}
+
+// ============================================================
+// SYSTÈME DE DESIGN — palette inspirée du logo BE CARTH AI :
+// violet/lavande comme accent principal, argent/anthracite en
+// neutre. Fond CLAIR par défaut ; mode sombre activable via
+// l'attribut [data-theme="dark"] sur <html>.
+//
+// Ne jamais redéfinir ces couleurs localement dans un composant :
+// toujours passer par ces variables (var(--color-xxx)).
+// ============================================================
+:root {
+  // Accent principal (violet du logo, sur "AI")
+  --color-accent: #7c6fdb;
+  --color-accent-light: #a89bf0;
+  --color-accent-deep: #5c4fc7;
+
+  // Neutre métallique (argent du logo)
+  --color-silver: #9ca3b0;
+  --color-charcoal: #14161f;
+  --color-charcoal-deep: #0b0d14;
+
+  // Sémantique (inchangée — succès/erreur restent lisibles universellement)
+  --color-green: #0e8f6b;
+  --color-green-light: #e4f5ef;
+  --color-red: #d64550;
+  --color-red-light: #fbeaec;
+  --color-amber: #c9822a;
+
+  // ---- Mode CLAIR (par défaut) ----
+  --color-bg: #f8f8fb;
+  --color-surface: #ffffff;
+  --color-text: #14161f;
+  --color-text-muted: #5b5f70;
+  --color-border: #e4e5ec;
+  --sidebar-bg-start: #14161f;
+  --sidebar-bg-end: #0b0d14;
+  --sidebar-text: rgba(255, 255, 255, 0.72);
+
+  --font-serif: 'Playfair Display', serif;
+  --font-sans: 'Inter', sans-serif;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-button: 10px;
+
+  --shadow-card: 0 2px 12px rgba(20, 22, 31, 0.05);
+  --shadow-card-hover: 0 8px 24px rgba(20, 22, 31, 0.09);
+
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --mdc-filled-button-container-shape: var(--radius-button);
+  --mdc-outlined-button-container-shape: var(--radius-button);
+  --mdc-text-button-container-shape: var(--radius-button);
+  --mdc-protected-button-container-shape: var(--radius-button);
+}
+
+// ---- Mode SOMBRE — activé en ajoutant data-theme="dark" sur <html> ----
+:root[data-theme='dark'] {
+  --color-bg: #0b0d14;
+  --color-surface: #181a24;
+  --color-text: #f2f2f6;
+  --color-text-muted: #9ca3b0;
+  --color-border: #2a2d3a;
+  --sidebar-bg-start: #0b0d14;
+  --sidebar-bg-end: #05060a;
+  --sidebar-text: rgba(255, 255, 255, 0.72);
+  --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+body {
+  color-scheme: light;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font: var(--mat-sys-body-medium);
+  font-family: var(--font-sans);
+  margin: 0;
+  height: 100%;
+  transition:
+    background-color 0.25s var(--ease),
+    color 0.25s var(--ease);
+}
+
+:root[data-theme='dark'] body {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+// ============================================================
+// Police d'icônes AUTO-HÉBERGÉE (pas de dépendance à Google Fonts).
+// ============================================================
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src:
+    url('/fonts/material-icons.woff2') format('woff2'),
+    url('/fonts/material-icons.woff') format('woff');
+}
+
+mat-icon,
+.material-icons {
+  font-family: 'Material Icons' !important;
+  font-weight: normal !important;
+  font-style: normal !important;
+  line-height: 1 !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  white-space: nowrap !important;
+  word-wrap: normal !important;
+  direction: ltr !important;
+  -webkit-font-feature-settings: 'liga';
+  font-feature-settings: 'liga';
+}
+
+// ============================================================
+// CLASSES DE BOUTONS RÉUTILISABLES
+// ============================================================
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-deep) 100%) !important;
+  color: white !important;
+  height: 44px;
+  padding: 0 1.3rem !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 14px rgba(124, 111, 219, 0.3);
+  transition:
+    transform 0.2s var(--ease),
+    box-shadow 0.2s var(--ease);
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(124, 111, 219, 0.4);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    box-shadow: none;
+  }
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.btn-danger {
+  background-color: var(--color-red) !important;
+  color: white !important;
+  height: 44px;
+  padding: 0 1.3rem !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 600 !important;
+}
+
+.btn-ghost {
+  background: transparent !important;
+  color: var(--color-text) !important;
+  height: 44px;
+  padding: 0 1.1rem !important;
+  font-weight: 600 !important;
+  border: 1.5px solid var(--color-border) !important;
+
+  &:hover {
+    border-color: var(--color-accent) !important;
+    color: var(--color-accent) !important;
+  }
+}
+
+// ============================================================
+// Fenêtres de dialogue (MatDialog) — forcées à suivre le même
+// système clair/sombre que le reste de l'application, pour ne
+// plus jamais avoir à corriger ça dialogue par dialogue.
+// ============================================================
+.mat-mdc-dialog-container {
+  --mdc-dialog-container-color: var(--color-surface);
+
+  .mdc-dialog__title,
+  h2[mat-dialog-title] {
+    color: var(--color-text) !important;
+  }
+
+  .mat-mdc-dialog-content,
+  mat-dialog-content p {
+    color: var(--color-text);
+  }
+}
+
+// ============================================================
+// Titres de page — un seul style, partout
+// ============================================================
+.eyebrow {
+  margin: 0 0 0.25rem;
+  color: var(--color-accent-deep);
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.page-title {
+  font-family: var(--font-serif);
+  margin: 0;
+  color: var(--color-text);
+  font-weight: 700;
+  font-size: 1.9rem;
+  line-height: 1.15;
+}

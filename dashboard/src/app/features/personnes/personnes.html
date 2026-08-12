@@ -1,0 +1,54 @@
+<div class="personnes-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Gestion des identités</p>
+      <h1 class="page-title">Personnes enrôlées</h1>
+    </div>
+    <button mat-flat-button class="btn-primary" (click)="ouvrirEnrolement()">
+      <mat-icon>person_add</mat-icon>
+      Enrôler une personne
+    </button>
+  </header>
+
+  @if (chargement()) {
+    <p class="loading-state">Chargement...</p>
+  } @else if (personnes().length === 0) {
+    <div class="empty-state">
+      <mat-icon>badge</mat-icon>
+      <p>Aucune personne enrôlée pour l'instant.</p>
+      <button mat-flat-button class="btn-primary" (click)="ouvrirEnrolement()">
+        Enrôler la première personne
+      </button>
+    </div>
+  } @else {
+    <div class="personnes-grid">
+      @for (p of personnes(); track p.id) {
+        <div class="personne-card">
+          <div class="personne-avatar">{{ initiales(p) }}</div>
+          <div class="personne-info">
+            <div class="personne-nom">{{ p.nom }} {{ p.prenom }}</div>
+            <div class="personne-role">{{ libelleRole(p.role) }}</div>
+            @if (p.email) {
+              <div class="personne-detail">
+                <mat-icon>mail</mat-icon>
+                {{ p.email }}
+              </div>
+            }
+            @if (p.telephone) {
+              <div class="personne-detail">
+                <mat-icon>call</mat-icon>
+                {{ p.telephone }}
+              </div>
+            }
+          </div>
+          <div class="personne-statut" [class.statut-inactif]="p.statut === 'INACTIF'">
+            {{ p.statut }}
+          </div>
+          <button mat-icon-button class="delete-button" (click)="supprimer(p)">
+            <mat-icon>delete_outline</mat-icon>
+          </button>
+        </div>
+      }
+    </div>
+  }
+</div>

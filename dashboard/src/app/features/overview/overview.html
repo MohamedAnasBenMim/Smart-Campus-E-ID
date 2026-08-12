@@ -1,0 +1,142 @@
+<div class="overview-page">
+  <header class="hero-header">
+    <div>
+      <p class="eyebrow">{{ salutation() }}, {{ auth.getCurrentUser()?.prenom }}</p>
+      <h1 class="hero-title">Vue d'ensemble du campus</h1>
+    </div>
+    <div class="hero-clock">
+      <div class="hero-time">{{ formattedTime() }}</div>
+      <div class="hero-date">{{ formattedDate() }}</div>
+    </div>
+  </header>
+
+  <section class="hero-panel">
+    <div class="ring-block">
+      <svg viewBox="0 0 160 160" class="ring-svg">
+        <circle cx="80" cy="80" r="70" class="ring-track" />
+        <circle
+          cx="80"
+          cy="80"
+          r="70"
+          class="ring-progress"
+          [style.stroke-dasharray]="circonference"
+          [style.stroke-dashoffset]="decalageAnneau()"
+        />
+      </svg>
+      <div class="ring-center">
+        <div class="ring-value">{{ tauxAccorde() }}%</div>
+        <div class="ring-label">Accès accordés</div>
+      </div>
+    </div>
+
+    <div class="stat-chips">
+      <div class="stat-chip">
+        <mat-icon>place</mat-icon>
+        <div>
+          <div class="stat-value">{{ nbZones() ?? '—' }}</div>
+          <div class="stat-label">Zones surveillées</div>
+        </div>
+      </div>
+      <div class="stat-chip">
+        <mat-icon>badge</mat-icon>
+        <div>
+          <div class="stat-value">{{ nbPersonnes() ?? '—' }}</div>
+          <div class="stat-label">Personnes enrôlées</div>
+        </div>
+      </div>
+      <div class="stat-chip">
+        <mat-icon>bolt</mat-icon>
+        <div>
+          <div class="stat-value">{{ nbEvenements() ?? '—' }}</div>
+          <div class="stat-label">Événements journalisés</div>
+        </div>
+      </div>
+      <div class="stat-chip" [class.stat-chip-alert]="(nbAlertesActives() ?? 0) > 0">
+        <mat-icon>notifications_active</mat-icon>
+        <div>
+          <div class="stat-value">{{ nbAlertesActives() ?? '—' }}</div>
+          <div class="stat-label">Alertes actives</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content-grid">
+    <div class="panel activity-panel">
+      <div class="panel-header">
+        <span>Activité récente</span>
+        <mat-icon>history</mat-icon>
+      </div>
+
+      @if (derniersEvenements().length === 0) {
+        <p class="empty-state">Aucun événement pour l'instant.</p>
+      } @else {
+        <div class="timeline">
+          @for (e of derniersEvenements(); track e.id) {
+            <div class="timeline-item" [class.timeline-refuse]="e.resultat === 'REFUSE'">
+              <div class="timeline-dot"></div>
+              <div class="timeline-content">
+                <div class="timeline-top">
+                  <span class="timeline-statut">{{ e.resultat }}</span>
+                  <span class="timeline-time">{{ tempsEcoule(e.horodatage) }}</span>
+                </div>
+                <p class="timeline-raison">{{ e.raison }}</p>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="panel alerts-panel">
+      <div class="panel-header">
+        <span>Alertes actives</span>
+        <mat-icon>warning</mat-icon>
+      </div>
+
+      @if (dernieresAlertes().length === 0) {
+        <p class="empty-state">Aucune alerte active — tout est calme.</p>
+      } @else {
+        <div class="alerte-list">
+          @for (alerte of dernieresAlertes(); track alerte.id) {
+            <div class="alerte-item" [ngClass]="classeAlerte(alerte.type)">
+              <mat-icon>{{ iconeAlerte(alerte.type) }}</mat-icon>
+              <div>
+                <div class="alerte-titre">{{ libelleAlerte(alerte.type) }}</div>
+                <div class="alerte-heure">{{ tempsEcoule(alerte.horodatage) }}</div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="panel camera-panel">
+      <div class="panel-header">
+        <span>Caméra en direct</span>
+        @if (camDisponible()) {
+          <span class="live-badge"><span class="live-dot"></span>LIVE</span>
+        }
+      </div>
+
+      @if (camDisponible()) {
+        <div class="camera-frame">
+          <video #videoPreview autoplay muted playsinline class="camera-preview"></video>
+          <svg viewBox="0 0 200 140" class="camera-overlay">
+            <g stroke="#c9a227" stroke-width="2.5" fill="none" stroke-linecap="round">
+              <path d="M10 30 L10 10 L30 10" />
+              <path d="M170 10 L190 10 L190 30" />
+              <path d="M190 110 L190 130 L170 130" />
+              <path d="M30 130 L10 130 L10 110" />
+            </g>
+          </svg>
+        </div>
+      } @else {
+        <div class="camera-unavailable">
+          <mat-icon>videocam_off</mat-icon>
+          <p>Aucune caméra détectée sur cet appareil.</p>
+        </div>
+      }
+    </div>
+  </section>
+</div>

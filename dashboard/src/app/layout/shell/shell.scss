@@ -1,0 +1,236 @@
+$navy: #14161f;
+$navy-deep: #0b0d14;
+$cyan: #7c6fdb;
+$cyan-light: #a89bf0;
+$gold: #9ca3b0;
+$gray: #5b6b82;
+$red: #d64550;
+$sidenav-width: 260px;
+$serif: 'Playfair Display', serif;
+
+.shell-container {
+  height: 100vh;
+}
+
+.sidenav {
+  width: $sidenav-width;
+  background: radial-gradient(ellipse at 50% 0%, $navy 0%, $navy-deep 100%);
+  color: white;
+  border: none;
+  display: flex;
+  flex-direction: column;
+
+  // Filet de sécurité : force la couleur du texte des éléments de liste
+  // Material directement via leurs variables internes, en plus du
+  // ::ng-deep ci-dessous — pour rester robuste quelle que soit la
+  // version exacte de Material Angular utilisée.
+  --mdc-list-list-item-label-text-color: rgba(255, 255, 255, 0.75);
+  --mat-list-list-item-leading-icon-icon-color: rgba(255, 255, 255, 0.55);
+}
+
+// Filet de sécurité supplémentaire : cible directement les éléments
+// HTML générés par Material à l'intérieur de mat-nav-list, quel que
+// soit le mécanisme de couleur qu'ils utilisent en interne.
+.sidenav ::ng-deep {
+  .mdc-list-item__primary-text,
+  .mat-mdc-list-item-title,
+  .mat-mdc-list-item-unscoped-content {
+    color: rgba(255, 255, 255, 0.75) !important;
+  }
+
+  .mat-mdc-list-item .mat-icon {
+    color: rgba(255, 255, 255, 0.55) !important;
+  }
+}
+
+.sidenav-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem 1.25rem;
+  border-bottom: 1px solid rgba(201, 162, 39, 0.2);
+  margin-bottom: 0.5rem;
+}
+
+.seal-svg {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+}
+
+.brand-name {
+  font-family: $serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1.15;
+}
+
+.brand-suffix {
+  font-size: 0.68rem;
+  color: $cyan-light;
+  letter-spacing: 1.5px;
+  font-weight: 600;
+}
+
+.nav-list {
+  flex: 1;
+  padding-top: 0.5rem;
+}
+
+.nav-item {
+  color: rgba(255, 255, 255, 0.68) !important;
+  margin: 2px 0.75rem;
+  border-radius: 10px !important;
+  position: relative;
+  transition: background-color 0.15s ease;
+
+  mat-icon {
+    color: rgba(255, 255, 255, 0.5) !important;
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: white !important;
+  }
+}
+
+.active-link {
+  background: rgba(0, 144, 196, 0.16) !important;
+  color: white !important;
+  box-shadow: inset 3px 0 0 $gold;
+
+  mat-icon {
+    color: $cyan-light !important;
+  }
+}
+
+// Doit venir APRÈS la règle générale ci-dessus (filet de sécurité du
+// .sidenav) pour bien gagner sur l'élément actif du menu.
+.sidenav .active-link ::ng-deep {
+  .mdc-list-item__primary-text,
+  .mat-mdc-list-item-title,
+  .mat-mdc-list-item-unscoped-content {
+    color: white !important;
+  }
+
+  .mat-icon {
+    color: $cyan-light !important;
+  }
+}
+
+.nav-badge {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: $red;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+}
+
+.sidenav-footer {
+  padding: 1rem 1.25rem 1.5rem;
+}
+
+.role-badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 0.3rem 0.7rem;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  &.role-admin {
+    background: rgba(201, 162, 39, 0.15);
+    color: $gold;
+    border-color: rgba(201, 162, 39, 0.3);
+  }
+}
+
+.topbar {
+  background: var(--color-surface) !important;
+  color: var(--color-text) !important;
+  border-bottom: 1px solid var(--color-border);
+  border-top: 2px solid $gold;
+  height: 64px;
+  transition:
+    background-color 0.25s var(--ease),
+    color 0.25s var(--ease);
+}
+
+.theme-toggle {
+  color: var(--color-text-muted) !important;
+  margin-right: 0.5rem;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.topbar-clock {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  margin-right: 1.5rem;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: $gold;
+  }
+}
+
+.user-menu-trigger {
+  padding: 0 !important;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, $cyan 0%, #006e99 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  border: 2px solid rgba(201, 162, 39, 0.4);
+}
+
+.user-menu-header {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 0.25rem;
+}
+
+.user-menu-name {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.user-menu-role {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.page-content {
+  padding: 2rem;
+  background: var(--color-bg);
+  min-height: calc(100vh - 64px);
+  transition: background-color 0.25s var(--ease);
+}

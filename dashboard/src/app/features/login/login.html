@@ -1,0 +1,164 @@
+<div class="login-page">
+  <div class="brand-panel">
+    <div class="mesh-bg"></div>
+    <div class="blueprint-grid"></div>
+
+    <div class="brand-content">
+      <div class="brand-header">
+        <div class="seal">
+          <svg viewBox="0 0 60 60" class="seal-svg">
+            <circle cx="30" cy="30" r="28" fill="none" stroke="#c9a227" stroke-width="1.5" />
+            <circle cx="30" cy="30" r="24" fill="none" stroke="#c9a227" stroke-width="0.75" opacity="0.6" />
+            <path
+              d="M30 16 L38 20 V30 C38 37 34 41.5 30 44 C26 41.5 22 37 22 30 V20 Z"
+              fill="none"
+              stroke="#4fc3e8"
+              stroke-width="1.8"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </div>
+        <div>
+          <h1>Smart Campus <span class="e-id">E-ID</span></h1>
+          <p class="tagline">INTELLIGENT&nbsp;&bull;&nbsp;SECURE&nbsp;&bull;&nbsp;FUTURE</p>
+        </div>
+      </div>
+
+      <p class="subtitle">
+        Plateforme intelligente de contrôle d'accès et de supervision par reconnaissance faciale,
+        conçue pour votre établissement.
+      </p>
+
+      <!-- Illustration : le campus, et l'entrée sécurisée par reconnaissance faciale -->
+      <div class="campus-illustration">
+        <svg viewBox="0 0 240 210" class="campus-svg">
+          <defs>
+            <radialGradient id="doorGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#4fc3e8" stop-opacity="0.55" />
+              <stop offset="100%" stop-color="#4fc3e8" stop-opacity="0" />
+            </radialGradient>
+          </defs>
+
+          <!-- Fronton et façade du bâtiment -->
+          <path
+            d="M40 68 L120 34 L200 68"
+            fill="none"
+            stroke="#c9a227"
+            stroke-width="2.5"
+            stroke-linejoin="round"
+          />
+          <rect x="40" y="68" width="160" height="100" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" />
+
+          <!-- Colonnes -->
+          <line x1="62" y1="68" x2="62" y2="160" stroke="rgba(255,255,255,0.25)" stroke-width="2" />
+          <line x1="90" y1="68" x2="90" y2="160" stroke="rgba(255,255,255,0.25)" stroke-width="2" />
+          <line x1="150" y1="68" x2="150" y2="160" stroke="rgba(255,255,255,0.25)" stroke-width="2" />
+          <line x1="178" y1="68" x2="178" y2="160" stroke="rgba(255,255,255,0.25)" stroke-width="2" />
+
+          <!-- Fenêtres -->
+          <rect x="68" y="86" width="14" height="14" fill="none" stroke="rgba(255,255,255,0.22)" />
+          <rect x="158" y="86" width="14" height="14" fill="none" stroke="rgba(255,255,255,0.22)" />
+
+          <!-- Porte d'entrée, sécurisée -->
+          <circle cx="120" cy="150" r="26" fill="url(#doorGlow)" />
+          <rect x="106" y="120" width="28" height="48" rx="2" fill="#0090c4" opacity="0.18" stroke="#4fc3e8" stroke-width="1.5" />
+
+          <!-- Silhouette de la personne, reconnue à l'entrée -->
+          <circle cx="120" cy="146" r="8" fill="rgba(255,255,255,0.85)" />
+          <path
+            d="M107 178 C107 164 133 164 133 178 L133 168 L107 168 Z"
+            fill="rgba(255,255,255,0.85)"
+          />
+
+          <!-- Cadre de scan autour du visage -->
+          <g class="corners" stroke="#c9a227" stroke-width="2" fill="none" stroke-linecap="round">
+            <path d="M104 132 L104 126 L110 126" />
+            <path d="M130 126 L136 126 L136 132" />
+            <path d="M136 156 L136 162 L130 162" />
+            <path d="M110 162 L104 162 L104 156" />
+          </g>
+
+          <!-- Points de repère faciaux -->
+          <circle class="landmark landmark-1" cx="116" cy="144" r="1.6" fill="#4fc3e8" />
+          <circle class="landmark landmark-2" cx="124" cy="144" r="1.6" fill="#4fc3e8" />
+          <circle class="landmark landmark-3" cx="120" cy="148" r="1.6" fill="#4fc3e8" />
+          <circle class="landmark landmark-4" cx="117" cy="151" r="1.6" fill="#4fc3e8" />
+          <circle class="landmark landmark-5" cx="123" cy="151" r="1.6" fill="#4fc3e8" />
+
+          <!-- Sol -->
+          <line x1="30" y1="168" x2="210" y2="168" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" />
+        </svg>
+        <p class="scan-caption">Accès reconnu &middot; Bienvenue sur le campus</p>
+      </div>
+
+      <div class="clock">
+        <div class="clock-time">{{ formattedTime() }}</div>
+        <div class="clock-date">{{ formattedDate() }}</div>
+      </div>
+
+      <div class="trust-badge">
+        <mat-icon>verified_user</mat-icon>
+        <span>Données biométriques chiffrées &middot; Conforme RGPD</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-panel">
+    <div class="form-card">
+      <h2>Connexion</h2>
+      <p class="form-subtitle">Accédez à votre espace administrateur ou surveillant</p>
+
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <mat-form-field appearance="outline" class="full-width field-1">
+          <mat-label>Email</mat-label>
+          <input matInput formControlName="email" type="email" autocomplete="email" />
+          <mat-icon matPrefix>mail</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width field-2">
+          <mat-label>Mot de passe</mat-label>
+          <input
+            matInput
+            formControlName="motDePasse"
+            [type]="hidePassword() ? 'password' : 'text'"
+            autocomplete="current-password"
+          />
+          <mat-icon matPrefix>lock</mat-icon>
+          <button
+            mat-icon-button
+            matSuffix
+            type="button"
+            (click)="hidePassword.set(!hidePassword())"
+            [attr.aria-label]="'Afficher le mot de passe'"
+          >
+            <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+        </mat-form-field>
+
+        @if (errorMessage()) {
+          <div class="error-message">
+            <mat-icon>error_outline</mat-icon>
+            {{ errorMessage() }}
+          </div>
+        }
+
+        <button
+          mat-flat-button
+          type="submit"
+          class="submit-button field-3"
+          [disabled]="form.invalid || loading()"
+        >
+          @if (loading()) {
+            <mat-spinner diameter="20" strokeWidth="3"></mat-spinner>
+          } @else {
+            <ng-container>
+              <span>Se connecter</span>
+            </ng-container>
+          }
+        </button>
+
+        <a href="#" class="forgot-password field-3">Mot de passe oublié ?</a>
+      </form>
+    </div>
+  </div>
+</div>

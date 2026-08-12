@@ -1,0 +1,43 @@
+<div class="zones-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Gestion des lieux</p>
+      <h1 class="page-title">Zones surveillées</h1>
+    </div>
+    <button mat-flat-button class="btn-primary" (click)="ouvrirCreation()">
+      <mat-icon>add_location_alt</mat-icon>
+      Nouvelle zone
+    </button>
+  </header>
+
+  @if (chargement()) {
+    <p class="loading-state">Chargement...</p>
+  } @else if (zones().length === 0) {
+    <div class="empty-state">
+      <mat-icon>place</mat-icon>
+      <p>Aucune zone créée pour l'instant.</p>
+      <button mat-flat-button class="btn-primary" (click)="ouvrirCreation()">
+        Créer la première zone
+      </button>
+    </div>
+  } @else {
+    <div class="zones-grid">
+      @for (z of zones(); track z.id) {
+        <div class="zone-card">
+          <div class="zone-icon">
+            <mat-icon>place</mat-icon>
+          </div>
+          <div class="zone-info">
+            <div class="zone-nom">{{ z.nom }}</div>
+            @if (z.description) {
+              <div class="zone-description">{{ z.description }}</div>
+            }
+          </div>
+          <button mat-icon-button class="delete-button" (click)="supprimer(z)">
+            <mat-icon>delete_outline</mat-icon>
+          </button>
+        </div>
+      }
+    </div>
+  }
+</div>

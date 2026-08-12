@@ -5,9 +5,11 @@ import com.smartcampus.backend.model.EvenementAcces;
 import com.smartcampus.backend.repository.AlerteRepository;
 import com.smartcampus.backend.repository.EvenementAccesRepository;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -27,12 +29,34 @@ public class SupervisionController {
         return alerteRepository.findAll();
     }
 
-    /** Marquer une alerte comme traitée par le surveillant. */
+    /**
+     * Marquer une alerte comme traitée — enregistre désormais QUI (déduit du
+     * token JWT), COMMENT (commentaire libre fourni par l'admin/surveillant)
+     * et QUAND (automatique), pas seulement le statut.
+     */
     @PatchMapping("/api/alertes/{id}")
-    public Alerte traiterAlerte(@PathVariable String id, @RequestBody Map<String, String> body) {
+    public Alerte traiterAlerte(
+            @PathVariable String id,
+            @RequestBody Map<String, String> body,
+            Authentication authentication
+    ) {
         Alerte alerte = alerteRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Alerte introuvable"));
-        alerte.setStatut(body.getOrDefault("statut", "TRAITEE"));
+
+        String nouveauStatut = body.getOrDefault("statut", "TRAITEE");
+        alerte.setStatut(nouveauStatut);
+
+        if (body.get("commentaireTraitement") != null) {
+            alerte.setCommentaireTraitement(body.get("commentaireTraitement"));
+        }
+
+        if ("TRAITEE".equals(nouveauStatut)) {
+            alerte.setDateTraitement(Instant.now());
+            if (authentication != null) {
+                alerte.setTraitePar(authentication.getName()); // email, extrait du JWT
+            }
+        }
+
         return alerteRepository.save(alerte);
     }
 
