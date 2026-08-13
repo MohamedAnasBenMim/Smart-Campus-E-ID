@@ -1,10 +1,14 @@
 import logging
+import os
 import time
 from typing import Optional
 
 import cv2
 import numpy as np
+import mediapipe as mp
 from insightface.app import FaceAnalysis
+from mediapipe.tasks import python as mp_python
+from mediapipe.tasks.python import vision as mp_vision
 
 from app.services import liveness
 
@@ -23,7 +27,7 @@ logger = logging.getLogger(__name__)
 #
 # Attention : plus cette valeur est grande, plus le traitement
 # est lent.
-DET_SIZE = (1024, 1024)
+DET_SIZE = (640, 640)
 
 
 _face_app = FaceAnalysis(
@@ -38,44 +42,90 @@ _face_app.prepare(
 
 
 # ============================================================
-# DÉTECTION DES PERSONNES
-# ============================================================
-
-# Détecteur de silhouette humaine.
+# DÉTECTION DES PERSONNES — PHASE 1.5 (tentative 2)
+#
+# HISTORIQUE :
+# 1) HOG (Phase 1) — trop de faux positifs sur objets (téléviseurs,
+#    cartons, chaises), confirmé sur vraie vidéo de test.
+# 2) SSD MobileNet via cv2.dnn (tentative 1) — écarté : erreur
+#    "Const input blob for weights not found", un problème
+#    d'appariement fragile entre poids TensorFlow (2017/2018) et
+#    fichier de config .pbtxt, jamais résolu malgré 2 essais avec des
+#    versions différentes.
+#
+# SOLUTION RETENUE : MediaPipe Object Detector (Google, licence
+# Apache 2.0, vérifiée). Avantages déterminants :
+#   - Un SEUL fichier modèle auto-suffisant (.tflite) — plus aucun
+#     risque d'appariement entre deux fichiers de sources séparées.
+#   - Infrastructure de téléchargement activement maintenue par
+#     Google aujourd'hui, contrairement aux fichiers TensorFlow 2017
+#     largement abandonnés.
+#   - Filtrage par NOM de catégorie ("person"), pas par ID numérique
+#     fragile.
 #
 # IMPORTANT :
-# HOG ne reconnaît PAS l'identité d'une personne.
-# Il sert seulement à détecter qu'une personne est présente
-# même lorsque son visage n'est pas exploitable.
+# Ce détecteur NE reconnaît PAS l'identité d'une personne — il détecte
+# uniquement une présence humaine, même lorsque le visage n'est pas
+# exploitable. Le format de sortie ([left, top, width, height]) est
+# IDENTIQUE aux versions précédentes : aucune modification nécessaire
+# dans tracker.py ni ailleurs.
+# ============================================================
 
-_hog = cv2.HOGDescriptor()
-_hog.setSVMDetector(
-    cv2.HOGDescriptor_getDefaultPeopleDetector()
+_MODELS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "models")
+_MEDIAPIPE_MODEL_PATH = os.path.join(_MODELS_DIR, "efficientdet_lite0.tflite")
+
+PERSON_DET_CONFIDENCE_THRESHOLD = 0.5
+
+_base_options = mp_python.BaseOptions(model_asset_path=_MEDIAPIPE_MODEL_PATH)
+_detector_options = mp_vision.ObjectDetectorOptions(
+    base_options=_base_options,
+    running_mode=mp_vision.RunningMode.IMAGE,
+    category_allowlist=["person"],
+    score_threshold=PERSON_DET_CONFIDENCE_THRESHOLD,
 )
+_person_detector = mp_vision.ObjectDetector.create_from_options(_detector_options)
 
 
 def detect_persons(image_bgr: np.ndarray) -> list:
     """
-    Détecte les silhouettes humaines dans l'image.
+    Détecte les personnes présentes dans l'image (MediaPipe Object
+    Detector, filtré sur la catégorie "person").
+
+    MODIFIÉ POUR LE DIAGNOSTIC (track_id qui change à tort) : renvoie
+    désormais aussi la confiance RÉELLE de MediaPipe par détection —
+    avant, cette valeur était calculée mais jamais transmise en dehors
+    de ce fichier. AUCUN autre comportement n'a changé.
 
     Retour :
         [
-            [left, top, width, height],
+            {"bbox": [left, top, width, height], "confidence": float},
             ...
         ]
     """
 
-    rects, _weights = _hog.detectMultiScale(
-        image_bgr,
-        winStride=(8, 8),
-        padding=(8, 8),
-        scale=1.05
-    )
+    # MediaPipe attend du RGB, notre pipeline travaille en BGR (OpenCV)
+    image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
+    mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image_rgb)
 
-    return [
-        [int(x), int(y), int(w), int(h)]
-        for (x, y, w, h) in rects
-    ]
+    resultat = _person_detector.detect(mp_image)
+
+    resultats = []
+
+    for detection in resultat.detections:
+        bbox = detection.bounding_box
+        confiance = detection.categories[0].score if detection.categories else None
+
+        resultats.append({
+            "bbox": [int(bbox.origin_x), int(bbox.origin_y), int(bbox.width), int(bbox.height)],
+            "confidence": float(confiance) if confiance is not None else None,
+        })
+
+        logger.info(
+            f"DETECT_PERSONS : personne détectée, confiance={round(confiance, 3) if confiance else None}, "
+            f"bbox=[{bbox.origin_x},{bbox.origin_y},{bbox.width},{bbox.height}]"
+        )
+
+    return resultats
 
 
 # ============================================================

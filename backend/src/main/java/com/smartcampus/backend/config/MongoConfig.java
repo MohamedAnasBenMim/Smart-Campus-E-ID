@@ -26,7 +26,7 @@ import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory;
 @Configuration
 public class MongoConfig {
 
-    private static final String MONGO_URI = "mongodb://mongo:27017/smartcampus";
+    private static final String MONGO_URI = "mongodb://localhost:27017/smartcampus";
     private static final String DATABASE_NAME = "smartcampus";
 
     @Bean

@@ -7,7 +7,7 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
-SILENT_FACE_REPO_PATH = "/opt/silent_face"
+SILENT_FACE_REPO_PATH = os.environ.get("SILENT_FACE_REPO_PATH", "/opt/silent_face")
 MODEL_DIR = os.path.join(SILENT_FACE_REPO_PATH, "resources/anti_spoof_models")
 
 sys.path.insert(0, SILENT_FACE_REPO_PATH)
