@@ -9,6 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Alertes as AlertesService } from '../../core/services/alertes';
 import { Alerte } from '../../core/models';
+import { ImageLightbox } from '../../shared/components/image-lightbox/image-lightbox';
 
 const LIBELLES_ALERTE: Record<string, { label: string; icone: string }> = {
   SPOOFING: { label: 'Tentative de spoofing', icone: 'gpp_bad' },
@@ -34,6 +35,7 @@ const LIBELLES_ALERTE: Record<string, { label: string; icone: string }> = {
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
+    MatIconModule,
   ],
   template: `
     <h2 mat-dialog-title>Traiter l'alerte</h2>
@@ -42,7 +44,17 @@ const LIBELLES_ALERTE: Record<string, { label: string; icone: string }> = {
       <p class="alerte-recap">{{ data.libelle }} — {{ data.horodatage | date: 'dd/MM/yyyy HH:mm' }}</p>
 
       @if (data.capturePhoto) {
-        <img [src]="data.capturePhoto" alt="Capture au moment de l'alerte" class="capture-preview" />
+        <div class="capture-wrapper">
+          <img [src]="data.capturePhoto" alt="Capture au moment de l'alerte" class="capture-preview" />
+          <button
+            type="button"
+            class="bouton-agrandir"
+            (click)="agrandir()"
+            aria-label="Agrandir la capture"
+          >
+            <mat-icon>zoom_in</mat-icon>
+          </button>
+        </div>
       }
 
       <form [formGroup]="form" class="traiter-form">
@@ -76,13 +88,46 @@ const LIBELLES_ALERTE: Record<string, { label: string; icone: string }> = {
         font-size: 0.85rem;
         margin: -0.5rem 0 1rem;
       }
+      .capture-wrapper {
+        position: relative;
+        margin-bottom: 1rem;
+      }
       .capture-preview {
         width: 100%;
         max-height: 220px;
         object-fit: cover;
         border-radius: 10px;
-        margin-bottom: 1rem;
+        display: block;
         border: 1px solid var(--color-border);
+      }
+      .bouton-agrandir {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        width: 32px;
+        height: 32px;
+        border: none;
+        border-radius: 8px;
+        background: rgba(0, 0, 0, 0.55);
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition:
+          background-color 0.15s ease,
+          transform 0.15s ease;
+
+        mat-icon {
+          font-size: 18px;
+          width: 18px;
+          height: 18px;
+        }
+
+        &:hover {
+          background: rgba(0, 0, 0, 0.75);
+          transform: scale(1.05);
+        }
       }
       .traiter-form {
         min-width: 380px;
@@ -99,11 +144,22 @@ export class TraiterAlerteDialog {
   constructor(
     private fb: FormBuilder,
     private alertesService: AlertesService,
+    private dialog: MatDialog,
     public dialogRef: MatDialogRef<TraiterAlerteDialog, boolean>,
     @Inject(MAT_DIALOG_DATA) public data: { alerteId: string; libelle: string; horodatage: string; capturePhoto?: string },
   ) {
     this.form = this.fb.group({
       commentaire: ['', [Validators.required, Validators.minLength(5)]],
+    });
+  }
+
+  agrandir(): void {
+    if (!this.data.capturePhoto) return;
+    this.dialog.open(ImageLightbox, {
+      panelClass: 'lightbox-panel',
+      backdropClass: 'lightbox-backdrop',
+      maxWidth: '95vw',
+      data: { imageUrl: this.data.capturePhoto, legende: this.data.libelle },
     });
   }
 
@@ -164,6 +220,16 @@ export class AlertesPage implements OnInit {
 
   icone(type: string): string {
     return LIBELLES_ALERTE[type]?.icone ?? 'error_outline';
+  }
+
+  agrandir(alerte: Alerte): void {
+    if (!alerte.capturePhoto) return;
+    this.dialog.open(ImageLightbox, {
+      panelClass: 'lightbox-panel',
+      backdropClass: 'lightbox-backdrop',
+      maxWidth: '95vw',
+      data: { imageUrl: alerte.capturePhoto, legende: this.libelle(alerte.type) },
+    });
   }
 
   ouvrirTraitement(alerte: Alerte): void {

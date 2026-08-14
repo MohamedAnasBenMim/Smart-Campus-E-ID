@@ -28,6 +28,14 @@ public class EvenementAcces {
     /** ex: "hors horaire", "zone non autorisée", "spoofing détecté", "personne inconnue" */
     private String raison;
 
+    /**
+     * NOUVEAU : capture de l'image au moment exact de l'événement
+     * (base64, préfixée "data:image/...;base64,") — pour l'historique
+     * de présence dans le dashboard. Peut être null si la capture a
+     * échoué (ne bloque jamais la journalisation elle-même).
+     */
+    private String capturePhoto;
+
     public EvenementAcces() {}
 
     public String getId() { return id; }
@@ -47,4 +55,7 @@ public class EvenementAcces {
 
     public String getRaison() { return raison; }
     public void setRaison(String raison) { this.raison = raison; }
+
+    public String getCapturePhoto() { return capturePhoto; }
+    public void setCapturePhoto(String capturePhoto) { this.capturePhoto = capturePhoto; }
 }

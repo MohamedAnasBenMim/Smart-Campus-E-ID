@@ -1,1 +1,66 @@
-<p>historique works!</p>
+<div class="historique-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Traçabilité</p>
+      <h1 class="page-title">Historique de présence</h1>
+    </div>
+
+    <div class="filtres">
+      <button class="filtre-btn" [class.actif]="filtre() === 'TOUS'" (click)="filtre.set('TOUS')">
+        Tous
+      </button>
+      <button class="filtre-btn" [class.actif]="filtre() === 'ACCORDE'" (click)="filtre.set('ACCORDE')">
+        Accordés ({{ nbAccordes() }})
+      </button>
+      <button class="filtre-btn" [class.actif]="filtre() === 'REFUSE'" (click)="filtre.set('REFUSE')">
+        Refusés ({{ nbRefuses() }})
+      </button>
+    </div>
+  </header>
+
+  @if (chargement()) {
+    <p class="loading-state">Chargement...</p>
+  } @else if (evenementsAffiches().length === 0) {
+    <div class="empty-state">
+      <mat-icon>history</mat-icon>
+      <p>Aucun événement pour ce filtre.</p>
+    </div>
+  } @else {
+    <div class="evenements-list">
+      @for (e of evenementsAffiches(); track e.id) {
+        <div class="evenement-card" [class.refuse]="e.resultat === 'REFUSE'">
+          @if (e.capturePhoto) {
+            <img
+              [src]="e.capturePhoto"
+              alt="Capture"
+              class="evenement-capture evenement-capture-cliquable"
+              (click)="agrandir(e)"
+            />
+          } @else {
+            <div class="evenement-capture evenement-capture-vide">
+              <mat-icon>person</mat-icon>
+            </div>
+          }
+
+          <div class="evenement-corps">
+            <div class="evenement-haut">
+              <span class="evenement-nom">{{ nomPersonne(e.personneId) }}</span>
+              @if (roleFor(e.personneId); as role) {
+                <span class="role-badge">{{ role }}</span>
+              }
+            </div>
+            <div class="evenement-meta">
+              <span><mat-icon>place</mat-icon>{{ nomZone(e.zoneId) }}</span>
+              <span><mat-icon>schedule</mat-icon>{{ e.horodatage | date: 'dd/MM/yyyy à HH:mm:ss' }}</span>
+            </div>
+            <p class="evenement-raison">{{ e.raison }}</p>
+          </div>
+
+          <span class="statut-badge" [class.statut-refuse]="e.resultat === 'REFUSE'">
+            {{ e.resultat }}
+          </span>
+        </div>
+      }
+    </div>
+  }
+</div>

@@ -98,6 +98,12 @@
 .alerte-capture-wrapper {
   position: relative;
   flex-shrink: 0;
+  cursor: zoom-in;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.85;
+  }
 }
 
 .alerte-capture {

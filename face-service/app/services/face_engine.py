@@ -11,6 +11,7 @@ from mediapipe.tasks import python as mp_python
 from mediapipe.tasks.python import vision as mp_vision
 
 from app.services import liveness
+from app.services import embedding_candidates
 
 
 logger = logging.getLogger(__name__)
@@ -27,7 +28,7 @@ logger = logging.getLogger(__name__)
 #
 # Attention : plus cette valeur est grande, plus le traitement
 # est lent.
-DET_SIZE = (640, 640)
+DET_SIZE = (1024, 1024)
 
 
 _face_app = FaceAnalysis(
@@ -713,6 +714,26 @@ def recognize_face(
                 f"résultat à confirmer"
             )
 
+        # ----------------------------------------------------
+        # CANDIDAT D'EMBEDDING — amélioration progressive contrôlée
+        # (voir embedding_candidates.py — ne modifie JAMAIS le profil
+        # directement, stocke juste un candidat en attente)
+        # ----------------------------------------------------
+
+        if resultat.get("resultat") == "reconnu" and not visage_petit:
+
+            embedding_candidates.evaluer_candidat(
+                subject_id=known_ids[best_index],
+                embedding=(
+                    face.embedding.tolist()
+                    if hasattr(face.embedding, "tolist")
+                    else list(face.embedding)
+                ),
+                embedding_profil_actuel=known_embeddings[best_index],
+                confiance=best_similarity,
+                face_size=face_width_px,
+                vivant=resultat.get("vivant", False),
+            )
 
         resultats.append(resultat)
 

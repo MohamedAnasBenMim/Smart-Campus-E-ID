@@ -1,0 +1,181 @@
+.page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.filtres {
+  display: flex;
+  gap: 0.4rem;
+  background: var(--color-border);
+  padding: 0.25rem;
+  border-radius: 10px;
+}
+
+.filtre-btn {
+  border: none;
+  background: transparent;
+  padding: 0.45rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+
+  &.actif {
+    background: var(--color-surface);
+    color: var(--color-accent-deep);
+    box-shadow: var(--shadow-card);
+  }
+}
+
+.loading-state {
+  color: var(--color-text-muted);
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  background: var(--color-surface);
+  border-radius: 16px;
+  color: var(--color-text-muted);
+  gap: 0.75rem;
+
+  mat-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+    color: var(--color-border);
+  }
+}
+
+.evenements-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.evenement-card {
+  background: var(--color-surface);
+  border-radius: 12px;
+  padding: 0.9rem 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: var(--shadow-card);
+  border-left: 3px solid #0e8f6b;
+  transition: background-color 0.25s var(--ease);
+
+  &.refuse {
+    border-left-color: #d64550;
+  }
+}
+
+.evenement-capture {
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--color-border);
+}
+
+.evenement-capture-cliquable {
+  cursor: zoom-in;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.85;
+  }
+}
+
+.evenement-capture-vide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg);
+  color: var(--color-text-muted);
+
+  mat-icon {
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
+  }
+}
+
+.evenement-corps {
+  flex: 1;
+  min-width: 0;
+}
+
+.evenement-haut {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.evenement-nom {
+  font-weight: 600;
+  color: var(--color-text);
+  font-size: 0.92rem;
+}
+
+.role-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  padding: 0.1rem 0.5rem;
+  border-radius: 20px;
+  background: var(--color-bg);
+  color: var(--color-accent-deep);
+}
+
+.evenement-meta {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.2rem;
+  flex-wrap: wrap;
+
+  span {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+  }
+
+  mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.evenement-raison {
+  margin: 0.3rem 0 0;
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+
+.statut-badge {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
+  background: rgba(14, 143, 107, 0.12);
+  color: #0e8f6b;
+}
+
+.statut-refuse {
+  background: rgba(214, 69, 80, 0.12);
+  color: #d64550;
+}

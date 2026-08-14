@@ -216,6 +216,26 @@ mat-icon,
 }
 
 // ============================================================
+// Visionneuse d'image plein écran — fond sombre, sans le cadre
+// blanc habituel d'un dialogue classique.
+// ============================================================
+.lightbox-panel .mat-mdc-dialog-container {
+  --mdc-dialog-container-color: transparent;
+  box-shadow: none;
+}
+
+.lightbox-panel .mdc-dialog__surface {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+.cdk-overlay-dark-backdrop.lightbox-backdrop {
+  background: rgba(5, 6, 10, 0.92);
+}
+
+// ============================================================
 // Titres de page — un seul style, partout
 // ============================================================
 .eyebrow {

@@ -32,6 +32,7 @@ export interface EvenementAcces {
   horodatage: string;
   resultat: 'ACCORDE' | 'REFUSE';
   raison: string;
+  capturePhoto?: string; // image encodée en base64 (data URI)
 }
 
 export interface Alerte {

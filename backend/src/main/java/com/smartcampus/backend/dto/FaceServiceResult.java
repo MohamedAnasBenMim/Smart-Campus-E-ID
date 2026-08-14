@@ -51,6 +51,14 @@ public class FaceServiceResult {
          */
         private String avertissement;
 
+        /**
+         * NOUVEAU : position du visage dans l'image [left, top, width, height],
+         * en pixels — jusqu'ici reçue du service Python mais jamais déclarée
+         * ici, donc silencieusement ignorée par Jackson. Nécessaire pour
+         * dessiner un cadre sur la bonne personne dans les captures.
+         */
+        private List<Integer> bbox;
+
         public Boolean getVivant() { return vivant; }
         public void setVivant(Boolean vivant) { this.vivant = vivant; }
 
@@ -68,5 +76,8 @@ public class FaceServiceResult {
 
         public String getAvertissement() { return avertissement; }
         public void setAvertissement(String avertissement) { this.avertissement = avertissement; }
+
+        public List<Integer> getBbox() { return bbox; }
+        public void setBbox(List<Integer> bbox) { this.bbox = bbox; }
     }
 }

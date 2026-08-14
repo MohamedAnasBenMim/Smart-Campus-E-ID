@@ -1,0 +1,9 @@
+<button mat-icon-button class="bouton-fermer" (click)="dialogRef.close()" aria-label="Fermer">
+  <mat-icon>close</mat-icon>
+</button>
+
+<img [src]="data.imageUrl" [alt]="data.legende ?? 'Capture agrandie'" class="image-agrandie" />
+
+@if (data.legende) {
+  <p class="legende">{{ data.legende }}</p>
+}

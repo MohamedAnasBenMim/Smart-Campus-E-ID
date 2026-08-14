@@ -1,0 +1,32 @@
+:host {
+  display: block;
+  position: relative;
+  padding: 0;
+  max-width: 90vw;
+  max-height: 90vh;
+}
+
+.image-agrandie {
+  display: block;
+  max-width: 90vw;
+  max-height: 85vh;
+  width: auto;
+  height: auto;
+  border-radius: 8px;
+}
+
+.bouton-fermer {
+  position: absolute;
+  top: -18px;
+  right: -18px;
+  background: var(--color-surface) !important;
+  box-shadow: var(--shadow-card-hover);
+  z-index: 1;
+}
+
+.legende {
+  text-align: center;
+  color: white;
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+}

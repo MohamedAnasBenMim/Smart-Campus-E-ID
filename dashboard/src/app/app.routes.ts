@@ -29,7 +29,11 @@ export const routes: Routes = [
         path: 'alertes',
         loadComponent: () => import('./features/alertes/alertes').then((m) => m.AlertesPage),
       },
-      // La page Historique de présence sera ajoutée ici à la prochaine étape.
+      {
+        path: 'historique',
+        loadComponent: () => import('./features/historique/historique').then((m) => m.HistoriquePage),
+      },
+      // Toutes les pages du dashboard sont maintenant construites.
     ],
   },
   { path: '**', redirectTo: '' },

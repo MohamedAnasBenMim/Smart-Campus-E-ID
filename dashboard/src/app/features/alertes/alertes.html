@@ -26,7 +26,7 @@
       @for (a of alertesAffichees; track a.id) {
         <div class="alerte-card" [class.traitee]="a.statut === 'TRAITEE'">
           @if (a.capturePhoto) {
-            <div class="alerte-capture-wrapper">
+            <div class="alerte-capture-wrapper" (click)="agrandir(a)">
               <img [src]="a.capturePhoto" alt="Capture au moment de l'alerte" class="alerte-capture" />
               <div class="alerte-badge-type">
                 <mat-icon>{{ icone(a.type) }}</mat-icon>

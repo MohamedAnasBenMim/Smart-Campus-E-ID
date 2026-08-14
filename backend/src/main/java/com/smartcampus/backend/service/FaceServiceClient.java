@@ -63,6 +63,18 @@ public class FaceServiceClient {
         return result;
     }
 
+    /**
+     * NOUVEAU — recharge tous les embeddings connus dans face-service.
+     * Nécessaire car face-service garde les embeddings UNIQUEMENT en
+     * mémoire (EMBEDDINGS_STORE) : sans cet appel, un simple redémarrage
+     * de face-service rend toutes les personnes déjà enrôlées
+     * méconnaissables, même si elles existent toujours dans MongoDB.
+     */
+    public void chargerEmbeddings(Map<String, List<Double>> embeddings) {
+        Map<String, Object> body = Map.of("embeddings", embeddings);
+        restTemplate.postForObject(baseUrl + "/load-embeddings", body, Map.class);
+    }
+
     private ByteArrayResource toResource(MultipartFile file) throws IOException {
         return new ByteArrayResource(file.getBytes()) {
             @Override

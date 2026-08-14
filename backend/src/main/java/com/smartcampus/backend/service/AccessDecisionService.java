@@ -15,6 +15,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -28,10 +33,11 @@ import java.util.Set;
  * reconnaissance, croise le résultat avec les règles d'accès, décide,
  * puis journalise systématiquement.
  *
- * AJOUT — capture photo : chaque alerte créée embarque désormais une
- * capture de l'image exacte qui l'a déclenchée (encodée en base64),
- * pour que le surveillant voie immédiatement de qui/quoi il s'agit,
- * sans avoir à retrouver le bon instant dans un flux vidéo.
+ * NOUVEAU : chaque capture est désormais ANNOTÉE — un cadre est dessiné
+ * autour du visage précis concerné par la décision (rouge pour un
+ * problème, vert pour un accès accordé). Utile quand plusieurs personnes
+ * sont présentes sur la même frame : on sait immédiatement laquelle a
+ * déclenché l'alerte, sans avoir à deviner.
  */
 @Service
 public class AccessDecisionService {
@@ -41,6 +47,9 @@ public class AccessDecisionService {
     private static final Set<String> RESULTATS_IGNORES = Set.of(
             "detection_incertaine", "angle_trop_marque"
     );
+
+    private static final Color COULEUR_PROBLEME = new Color(214, 69, 80);   // rouge — cohérent avec le dashboard
+    private static final Color COULEUR_ACCORDE = new Color(14, 143, 107);   // vert — cohérent avec le dashboard
 
     private final FaceServiceClient faceServiceClient;
     private final PersonneRepository personneRepository;
@@ -66,9 +75,8 @@ public class AccessDecisionService {
         FaceServiceResult result = faceServiceClient.recognize(image);
         List<AccessDecision> decisions = new ArrayList<>();
 
-        // Capturée UNE SEULE FOIS ici, réutilisée pour toutes les alertes
-        // éventuelles de cette frame — évite de relire le flux plusieurs fois.
-        String capturePhoto = encoderImageEnBase64(image);
+        byte[] imageBytesOriginaux = image.getBytes();
+        String typeContenu = image.getContentType() != null ? image.getContentType() : "image/jpeg";
 
         for (FaceServiceResult.FaceResultItem face : result.getResultats()) {
             if (RESULTATS_IGNORES.contains(face.getResultat())) {
@@ -76,23 +84,31 @@ public class AccessDecisionService {
             }
 
             if ("spoof_detecte".equals(face.getResultat())) {
-                decisions.add(handleSpoof(zoneId, capturePhoto));
+                String capture = annoterImage(imageBytesOriginaux, typeContenu, face.getBbox(), "SPOOFING", COULEUR_PROBLEME);
+                decisions.add(handleSpoof(zoneId, capture));
                 continue;
             }
 
             if ("inconnu".equals(face.getResultat())) {
-                decisions.add(handleInconnu(zoneId, capturePhoto));
+                String capture = annoterImage(imageBytesOriginaux, typeContenu, face.getBbox(), "INCONNU", COULEUR_PROBLEME);
+                decisions.add(handleInconnu(zoneId, capture));
                 continue;
             }
 
             if ("reconnu".equals(face.getResultat())) {
-                decisions.add(handleReconnu(face.getSubjectId(), zoneId, face.getAvertissement(), capturePhoto));
+                decisions.add(handleReconnu(
+                        face.getSubjectId(), zoneId, face.getAvertissement(),
+                        imageBytesOriginaux, typeContenu, face.getBbox()
+                ));
             }
         }
 
         if (result.isPresenceNonIdentifiee()) {
+            // Pas de bbox précis possible ici, par nature du cas : on ne
+            // sait justement pas identifier quel visage pose problème.
+            String capture = "data:" + typeContenu + ";base64," + Base64.getEncoder().encodeToString(imageBytesOriginaux);
             decisions.add(handlePresenceNonIdentifiee(
-                    zoneId, result.getPersonnesDetectees(), result.getVisagesDetectes(), capturePhoto
+                    zoneId, result.getPersonnesDetectees(), result.getVisagesDetectes(), capture
             ));
         }
 
@@ -100,30 +116,70 @@ public class AccessDecisionService {
     }
 
     /**
-     * Convertit l'image reçue en chaîne base64 prête à afficher directement
-     * dans une balise <img> (préfixe data:...;base64, inclus). Ne fait
-     * JAMAIS échouer la requête si la capture échoue — une alerte sans
-     * photo reste préférable à aucune alerte du tout.
+     * Dessine un cadre coloré (avec étiquette) autour d'un visage précis
+     * dans l'image, puis encode le résultat en base64.
+     *
+     * Ne fait JAMAIS échouer la requête : en cas de souci (bbox absente,
+     * image illisible...), renvoie l'image originale non annotée plutôt
+     * que de bloquer la journalisation.
      */
-    private String encoderImageEnBase64(MultipartFile image) {
+    private String annoterImage(byte[] imageBytesOriginaux, String typeContenu, List<Integer> bbox, String etiquette, Color couleur) {
+        if (bbox == null || bbox.size() < 4) {
+            return encoderSansAnnotation(imageBytesOriginaux, typeContenu);
+        }
+
         try {
-            String typeContenu = image.getContentType() != null ? image.getContentType() : "image/jpeg";
-            String base64 = Base64.getEncoder().encodeToString(image.getBytes());
-            return "data:" + typeContenu + ";base64," + base64;
+            BufferedImage image = ImageIO.read(new ByteArrayInputStream(imageBytesOriginaux));
+            if (image == null) {
+                return encoderSansAnnotation(imageBytesOriginaux, typeContenu);
+            }
+
+            Graphics2D g = image.createGraphics();
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            int x = bbox.get(0), y = bbox.get(1), largeur = bbox.get(2), hauteur = bbox.get(3);
+
+            g.setColor(couleur);
+            g.setStroke(new BasicStroke(4));
+            g.drawRect(x, y, largeur, hauteur);
+
+            if (etiquette != null) {
+                g.setFont(g.getFont().deriveFont(Font.BOLD, 22f));
+                FontMetrics fm = g.getFontMetrics();
+                int largeurEtiquette = fm.stringWidth(etiquette) + 14;
+                int hauteurEtiquette = fm.getHeight() + 6;
+                int yEtiquette = Math.max(0, y - hauteurEtiquette);
+
+                g.setColor(couleur);
+                g.fillRect(x, yEtiquette, largeurEtiquette, hauteurEtiquette);
+                g.setColor(Color.WHITE);
+                g.drawString(etiquette, x + 7, yEtiquette + fm.getAscent() + 2);
+            }
+
+            g.dispose();
+
+            ByteArrayOutputStream sortie = new ByteArrayOutputStream();
+            ImageIO.write(image, "jpg", sortie);
+            return "data:image/jpeg;base64," + Base64.getEncoder().encodeToString(sortie.toByteArray());
+
         } catch (IOException e) {
-            log.warn("Échec de la capture photo pour une alerte : {}", e.getMessage());
-            return null;
+            log.warn("Échec de l'annotation d'image : {} — capture non annotée utilisée à la place", e.getMessage());
+            return encoderSansAnnotation(imageBytesOriginaux, typeContenu);
         }
     }
 
+    private String encoderSansAnnotation(byte[] imageBytesOriginaux, String typeContenu) {
+        return "data:" + typeContenu + ";base64," + Base64.getEncoder().encodeToString(imageBytesOriginaux);
+    }
+
     private AccessDecision handleSpoof(String zoneId, String capturePhoto) {
-        EvenementAcces evt = journaliser(null, zoneId, "REFUSE", "tentative de spoofing détectée");
+        EvenementAcces evt = journaliser(null, zoneId, "REFUSE", "tentative de spoofing détectée", capturePhoto);
         creerAlerte("SPOOFING", evt.getId(), capturePhoto);
         return new AccessDecision(null, null, zoneId, "REFUSE", evt.getRaison());
     }
 
     private AccessDecision handleInconnu(String zoneId, String capturePhoto) {
-        EvenementAcces evt = journaliser(null, zoneId, "REFUSE", "personne non enrôlée");
+        EvenementAcces evt = journaliser(null, zoneId, "REFUSE", "personne non enrôlée", capturePhoto);
         creerAlerte("ACCES_NON_AUTORISE", evt.getId(), capturePhoto);
         return new AccessDecision(null, null, zoneId, "REFUSE", evt.getRaison());
     }
@@ -135,29 +191,35 @@ public class AccessDecisionService {
                 "%d personne(s) détectée(s) mais identité confirmée pour %d visage(s) seulement — présence non identifiée",
                 personnesDetectees, visagesDetectes
         );
-        EvenementAcces evt = journaliser(null, zoneId, "REFUSE", raison);
+        EvenementAcces evt = journaliser(null, zoneId, "REFUSE", raison, capturePhoto);
         creerAlerte("PRESENCE_NON_IDENTIFIEE", evt.getId(), capturePhoto);
         return new AccessDecision(null, null, zoneId, "REFUSE", raison);
     }
 
-    private AccessDecision handleReconnu(String personneId, String zoneId, String avertissement, String capturePhoto) {
+    private AccessDecision handleReconnu(
+            String personneId, String zoneId, String avertissement,
+            byte[] imageBytesOriginaux, String typeContenu, List<Integer> bbox
+    ) {
         Optional<Personne> personneOpt = personneRepository.findById(personneId);
         if (personneOpt.isEmpty()) {
-            return handleInconnu(zoneId, capturePhoto);
+            String capture = annoterImage(imageBytesOriginaux, typeContenu, bbox, "INCONNU", COULEUR_PROBLEME);
+            return handleInconnu(zoneId, capture);
         }
         Personne personne = personneOpt.get();
 
         if (avertissement != null) {
             String raison = "identité probable (" + personne.getNom() + ") mais confiance réduite : " + avertissement;
-            EvenementAcces evt = journaliser(personneId, zoneId, "REFUSE", raison);
-            creerAlerte("IDENTITE_A_CONFIRMER", evt.getId(), capturePhoto);
+            String capture = annoterImage(imageBytesOriginaux, typeContenu, bbox, "À CONFIRMER", COULEUR_PROBLEME);
+            EvenementAcces evt = journaliser(personneId, zoneId, "REFUSE", raison, capture);
+            creerAlerte("IDENTITE_A_CONFIRMER", evt.getId(), capture);
             return new AccessDecision(personneId, personne.getNom(), zoneId, "REFUSE", raison);
         }
 
         Optional<RegleAcces> regleOpt = regleAccesRepository.findByPersonneIdAndZoneId(personneId, zoneId);
         if (regleOpt.isEmpty()) {
-            EvenementAcces evt = journaliser(personneId, zoneId, "REFUSE", "zone non autorisée pour ce profil");
-            creerAlerte("ACCES_INTERDIT", evt.getId(), capturePhoto);
+            String capture = annoterImage(imageBytesOriginaux, typeContenu, bbox, personne.getNom() + " — ZONE INTERDITE", COULEUR_PROBLEME);
+            EvenementAcces evt = journaliser(personneId, zoneId, "REFUSE", "zone non autorisée pour ce profil", capture);
+            creerAlerte("ACCES_INTERDIT", evt.getId(), capture);
             return new AccessDecision(personneId, personne.getNom(), zoneId, "REFUSE", evt.getRaison());
         }
 
@@ -166,22 +228,25 @@ public class AccessDecisionService {
         boolean horaireValide = !maintenant.isBefore(regle.getHoraireDebut()) && !maintenant.isAfter(regle.getHoraireFin());
 
         if (!horaireValide) {
-            EvenementAcces evt = journaliser(personneId, zoneId, "REFUSE", "hors horaire autorisé");
-            creerAlerte("HORAIRE_INTERDIT", evt.getId(), capturePhoto);
+            String capture = annoterImage(imageBytesOriginaux, typeContenu, bbox, personne.getNom() + " — HORS HORAIRE", COULEUR_PROBLEME);
+            EvenementAcces evt = journaliser(personneId, zoneId, "REFUSE", "hors horaire autorisé", capture);
+            creerAlerte("HORAIRE_INTERDIT", evt.getId(), capture);
             return new AccessDecision(personneId, personne.getNom(), zoneId, "REFUSE", evt.getRaison());
         }
 
-        // Accès accordé : pas d'alerte, donc pas besoin de conserver la capture.
-        EvenementAcces evt = journaliser(personneId, zoneId, "ACCORDE", "identité et règle d'accès validées");
+        // Accès accordé — cadre VERT avec le nom, pour la présence.
+        String capture = annoterImage(imageBytesOriginaux, typeContenu, bbox, personne.getNom(), COULEUR_ACCORDE);
+        EvenementAcces evt = journaliser(personneId, zoneId, "ACCORDE", "identité et règle d'accès validées", capture);
         return new AccessDecision(personneId, personne.getNom(), zoneId, "ACCORDE", evt.getRaison());
     }
 
-    private EvenementAcces journaliser(String personneId, String zoneId, String resultat, String raison) {
+    private EvenementAcces journaliser(String personneId, String zoneId, String resultat, String raison, String capturePhoto) {
         EvenementAcces evt = new EvenementAcces();
         evt.setPersonneId(personneId);
         evt.setZoneId(zoneId);
         evt.setResultat(resultat);
         evt.setRaison(raison);
+        evt.setCapturePhoto(capturePhoto);
         return evenementAccesRepository.save(evt);
     }
 

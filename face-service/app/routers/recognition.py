@@ -11,6 +11,7 @@ from app.models.schemas import (
     TrackResponse,
 )
 from app.services import face_engine
+from app.services import embedding_candidates
 from app.services.track_manager import track_manager
 
 logger = logging.getLogger(__name__)
@@ -88,3 +89,41 @@ async def track(
     # ---- FIN chronométrage temporaire ----
 
     return {"camera_id": camera_id, "tracks": tracks}
+
+
+# ============================================================
+# AMÉLIORATION PROGRESSIVE — candidats d'embeddings
+#
+# IMPORTANT : /candidates/{subject_id}/valider doit être appelé
+# explicitement (typiquement par un administrateur, après avoir
+# consulté GET /candidates) — RIEN ne s'applique automatiquement.
+# ============================================================
+
+@router.get("/candidates")
+async def lister_candidats():
+    """Résumé des candidats en attente, par personne — à consulter
+    AVANT de valider ou rejeter quoi que ce soit."""
+    return embedding_candidates.lister_candidats()
+
+
+@router.post("/candidates/{subject_id}/valider")
+async def valider_candidats(subject_id: str):
+    if subject_id not in face_engine.EMBEDDINGS_STORE:
+        raise HTTPException(status_code=404, detail="Personne inconnue")
+
+    nouveau_profil = embedding_candidates.valider_candidats(
+        subject_id=subject_id,
+        embedding_profil_actuel=face_engine.EMBEDDINGS_STORE[subject_id],
+    )
+
+    if nouveau_profil is None:
+        raise HTTPException(status_code=404, detail="Aucun candidat en attente pour cette personne")
+
+    face_engine.EMBEDDINGS_STORE[subject_id] = nouveau_profil
+    return {"subject_id": subject_id, "statut": "profil mis à jour"}
+
+
+@router.delete("/candidates/{subject_id}")
+async def rejeter_candidats(subject_id: str):
+    nombre = embedding_candidates.rejeter_candidats(subject_id)
+    return {"subject_id": subject_id, "candidats_rejetes": nombre}
