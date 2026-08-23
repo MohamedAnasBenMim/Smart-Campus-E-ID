@@ -1,0 +1,92 @@
+<div class="historique-appels-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Suivi pédagogique</p>
+      <h1 class="page-title">Historique des appels</h1>
+    </div>
+
+    <button mat-flat-button class="btn-primary" [matMenuTriggerFor]="menuExport" [disabled]="lignes().length === 0">
+      <mat-icon>download</mat-icon>
+      Télécharger
+    </button>
+    <mat-menu #menuExport="matMenu">
+      <button mat-menu-item (click)="exporterCsv()">
+        <mat-icon>description</mat-icon>
+        <span>CSV</span>
+      </button>
+      <button mat-menu-item (click)="exporterExcel()">
+        <mat-icon>grid_on</mat-icon>
+        <span>Excel (.xlsx)</span>
+      </button>
+      <button mat-menu-item (click)="exporterPdf()">
+        <mat-icon>picture_as_pdf</mat-icon>
+        <span>PDF</span>
+      </button>
+      <button mat-menu-item (click)="exporterWord()">
+        <mat-icon>article</mat-icon>
+        <span>Word (.doc)</span>
+      </button>
+    </mat-menu>
+  </header>
+
+  <div class="filtres">
+    <mat-form-field appearance="outline" class="select-classe">
+      <mat-label>Classe</mat-label>
+      <mat-select [(ngModel)]="classeFiltreId">
+        <mat-option value="TOUTES">Toutes les classes</mat-option>
+        @for (c of classes(); track c.id) {
+          <mat-option [value]="c.id">{{ c.nom }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <label class="champ-date">
+      <span>Du</span>
+      <input type="date" [(ngModel)]="dateDebut" />
+    </label>
+    <label class="champ-date">
+      <span>Au</span>
+      <input type="date" [(ngModel)]="dateFin" />
+    </label>
+  </div>
+
+  @if (chargement()) {
+    <p class="loading-state">Chargement...</p>
+  } @else if (lignes().length === 0) {
+    <div class="empty-state">
+      <mat-icon>fact_check</mat-icon>
+      <p>Aucun appel validé pour ces critères.</p>
+    </div>
+  } @else {
+    <div class="tableau-wrapper">
+      <table class="tableau-appels">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Classe</th>
+            <th>Cours</th>
+            <th>Personne</th>
+            <th>Rôle</th>
+            <th>Statut</th>
+            <th>Heure d'arrivée</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (l of lignes(); track l.date + l.coursNom + l.personneNom) {
+            <tr>
+              <td>{{ l.date }}</td>
+              <td>{{ l.classeNom }}</td>
+              <td>{{ l.coursNom }}</td>
+              <td>{{ l.personneNom }}</td>
+              <td>{{ l.role }}</td>
+              <td>
+                <span class="statut-badge" [class]="'statut-' + l.statut.toLowerCase()">{{ l.statut }}</span>
+              </td>
+              <td>{{ l.heureArrivee }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

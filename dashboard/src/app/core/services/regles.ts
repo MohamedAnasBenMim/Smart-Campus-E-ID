@@ -22,6 +22,13 @@ export class Regles {
     return this.http.post<RegleAcces>(`${API_BASE}/regles`, regle);
   }
 
+  modifier(
+    id: string,
+    regle: { personneId: string; zoneId: string; horaireDebut: string; horaireFin: string },
+  ): Observable<RegleAcces> {
+    return this.http.put<RegleAcces>(`${API_BASE}/regles/${id}`, regle);
+  }
+
   supprimer(id: string): Observable<void> {
     return this.http.delete<void>(`${API_BASE}/regles/${id}`);
   }

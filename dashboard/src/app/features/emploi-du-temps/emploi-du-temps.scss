@@ -1,0 +1,186 @@
+.page-header {
+  margin-bottom: 1.25rem;
+}
+
+.controles {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.select-classe {
+  width: 240px;
+}
+
+.select-jour {
+  width: 180px;
+}
+
+.toggle-vue {
+  height: 44px;
+}
+
+.loading-state {
+  color: var(--color-text-muted);
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  background: var(--color-surface);
+  border-radius: 16px;
+  color: var(--color-text-muted);
+  gap: 0.75rem;
+
+  mat-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+    color: var(--color-border);
+  }
+}
+
+// ============================================================
+// Vue semaine — grille CSS
+// ============================================================
+
+.grille-semaine {
+  display: grid;
+  grid-template-columns: 60px repeat(6, 1fr);
+  background: var(--color-surface);
+  border-radius: 14px;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  min-height: 600px;
+}
+
+.case-vide {
+  border-bottom: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-border);
+}
+
+.entete-jour {
+  padding: 0.75rem 0.5rem;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.4px;
+  color: var(--color-text);
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-border);
+}
+
+.etiquette-heure {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  text-align: right;
+  padding-right: 0.5rem;
+  padding-top: 0.2rem;
+  border-right: 1px solid var(--color-border);
+  border-top: 1px solid var(--color-border);
+  grid-column: 1;
+}
+
+.bloc-cours {
+  margin: 2px 4px;
+  border-radius: 8px;
+  padding: 0.4rem 0.55rem;
+  color: white;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.bloc-nom {
+  font-weight: 700;
+  font-size: 0.78rem;
+  line-height: 1.2;
+}
+
+.bloc-detail {
+  font-size: 0.68rem;
+  opacity: 0.92;
+  line-height: 1.2;
+}
+
+.bloc-horaire {
+  font-size: 0.65rem;
+  opacity: 0.8;
+  margin-top: auto;
+}
+
+// ============================================================
+// Vue jour — liste chronologique
+// ============================================================
+
+.vue-jour {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.empty-jour {
+  color: var(--color-text-muted);
+  padding: 2rem;
+  text-align: center;
+  background: var(--color-surface);
+  border-radius: 14px;
+}
+
+.carte-jour {
+  display: flex;
+  gap: 1.25rem;
+  align-items: center;
+  background: var(--color-surface);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  box-shadow: var(--shadow-card);
+  border-left: 4px solid;
+}
+
+.carte-jour-horaire {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  color: var(--color-text);
+  font-size: 0.95rem;
+  min-width: 110px;
+}
+
+.carte-jour-corps {
+  flex: 1;
+}
+
+.carte-jour-nom {
+  font-weight: 600;
+  color: var(--color-text);
+  font-size: 0.95rem;
+  margin-bottom: 0.3rem;
+}
+
+.carte-jour-detail {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin-top: 0.15rem;
+
+  mat-icon {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+    color: var(--color-accent);
+  }
+}
+.bloc-cours,
+.carte-jour {
+  cursor: pointer;
+}

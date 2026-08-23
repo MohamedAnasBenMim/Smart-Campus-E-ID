@@ -59,6 +59,16 @@ public class FaceServiceResult {
          */
         private List<Integer> bbox;
 
+        /**
+         * NOUVEAU : embedding du visage (512 valeurs), renvoyé par
+         * face-service pour "reconnu" et "inconnu" — nécessaire pour le
+         * traitement spécialisé des alertes.
+         */
+        private List<Double> embedding;
+
+        public List<Double> getEmbedding() { return embedding; }
+        public void setEmbedding(List<Double> embedding) { this.embedding = embedding; }
+
         public Boolean getVivant() { return vivant; }
         public void setVivant(Boolean vivant) { this.vivant = vivant; }
 

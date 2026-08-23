@@ -17,6 +17,10 @@ export class Zones {
     return this.http.post<Zone>(`${API_BASE}/zones`, zone);
   }
 
+  modifier(id: string, zone: Partial<Zone>): Observable<Zone> {
+    return this.http.put<Zone>(`${API_BASE}/zones/${id}`, zone);
+  }
+
   supprimer(id: string): Observable<void> {
     return this.http.delete<void>(`${API_BASE}/zones/${id}`);
   }

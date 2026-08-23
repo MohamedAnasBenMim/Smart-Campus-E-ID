@@ -4,8 +4,10 @@ import com.smartcampus.backend.dto.RegleAccesRequest;
 import com.smartcampus.backend.model.RegleAcces;
 import com.smartcampus.backend.repository.RegleAccesRepository;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalTime;
 import java.util.List;
@@ -33,6 +35,20 @@ public class RegleAccesController {
         regle.setZoneId(request.getZoneId());
         regle.setHoraireDebut(LocalTime.parse(request.getHoraireDebut()));
         regle.setHoraireFin(LocalTime.parse(request.getHoraireFin()));
+        return regleAccesRepository.save(regle);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/{id}")
+    public RegleAcces modifier(@PathVariable String id, @Valid @RequestBody RegleAccesRequest request) {
+        RegleAcces regle = regleAccesRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Règle introuvable"));
+
+        regle.setPersonneId(request.getPersonneId());
+        regle.setZoneId(request.getZoneId());
+        regle.setHoraireDebut(LocalTime.parse(request.getHoraireDebut()));
+        regle.setHoraireFin(LocalTime.parse(request.getHoraireFin()));
+
         return regleAccesRepository.save(regle);
     }
 

@@ -1,0 +1,51 @@
+<div class="page-auth">
+  <div class="carte-auth">
+    @if (tokenAbsent()) {
+      <div class="confirmation confirmation-erreur">
+        <mat-icon class="icone-erreur">link_off</mat-icon>
+        <p>Ce lien de réinitialisation est invalide ou incomplet.</p>
+        <a routerLink="/mot-de-passe-oublie" class="btn-lien">Redemander un lien</a>
+      </div>
+    } @else if (succes()) {
+      <div class="confirmation">
+        <mat-icon class="icone-confirmation">check_circle</mat-icon>
+        <p>Votre mot de passe a été mis à jour avec succès. Redirection vers la connexion...</p>
+      </div>
+    } @else {
+      <h1 class="titre">Nouveau mot de passe</h1>
+      <p class="sous-titre">Choisissez un nouveau mot de passe pour votre compte.</p>
+
+      <form [formGroup]="form" (ngSubmit)="soumettre()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Nouveau mot de passe</mat-label>
+          <input matInput type="password" formControlName="nouveauMotDePasse" />
+          <mat-icon matPrefix>lock</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Confirmer le mot de passe</mat-label>
+          <input matInput type="password" formControlName="confirmation" />
+          <mat-icon matPrefix>lock</mat-icon>
+        </mat-form-field>
+
+        @if (form.errors?.['motsDePasseDifferents'] && form.get('confirmation')?.touched) {
+          <div class="message-erreur">
+            <mat-icon>error_outline</mat-icon>
+            Les mots de passe ne correspondent pas.
+          </div>
+        }
+
+        @if (erreur()) {
+          <div class="message-erreur">
+            <mat-icon>error_outline</mat-icon>
+            {{ erreur() }}
+          </div>
+        }
+
+        <button mat-flat-button class="btn-primary full-width" type="submit" [disabled]="form.invalid || envoiEnCours()">
+          {{ envoiEnCours() ? 'Enregistrement...' : 'Réinitialiser le mot de passe' }}
+        </button>
+      </form>
+    }
+  </div>
+</div>

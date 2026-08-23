@@ -1,0 +1,46 @@
+<div class="classes-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Organisation pédagogique</p>
+      <h1 class="page-title">Classes</h1>
+    </div>
+    <button mat-flat-button class="btn-primary" (click)="ouvrirCreation()">
+      <mat-icon>add</mat-icon>
+      Nouvelle classe
+    </button>
+  </header>
+
+  @if (chargement()) {
+    <p class="loading-state">Chargement...</p>
+  } @else if (classes().length === 0) {
+    <div class="empty-state">
+      <mat-icon>groups</mat-icon>
+      <p>Aucune classe créée pour l'instant.</p>
+      <button mat-flat-button class="btn-primary" (click)="ouvrirCreation()">
+        Créer la première classe
+      </button>
+    </div>
+  } @else {
+    <div class="classes-grid">
+      @for (c of classes(); track c.id) {
+        <div class="classe-card">
+          <div class="classe-header">
+            <div class="classe-nom">{{ c.nom }}</div>
+            <button mat-icon-button class="delete-button" (click)="supprimer(c)">
+              <mat-icon>delete_outline</mat-icon>
+            </button>
+          </div>
+
+          <div class="classe-effectif">
+            <mat-icon>person</mat-icon>
+            {{ c.eleveIds.length }} élève(s)
+          </div>
+
+          <button mat-stroked-button class="btn-voir-eleves" (click)="voirEleves(c)">
+            Voir la liste des élèves
+          </button>
+        </div>
+      }
+    </div>
+  }
+</div>

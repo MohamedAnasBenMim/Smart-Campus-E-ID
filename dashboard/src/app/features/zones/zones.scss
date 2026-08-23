@@ -52,7 +52,7 @@
     box-shadow: var(--shadow-card-hover);
     transform: translateY(-1px);
 
-    .delete-button {
+    .zone-actions {
       opacity: 1;
     }
   }
@@ -95,11 +95,24 @@
   line-height: 1.4;
 }
 
-.delete-button {
+.zone-actions {
   position: absolute;
-  top: 0.85rem;
-  right: 0.6rem;
+  top: 0.6rem;
+  right: 0.4rem;
+  display: flex;
+  gap: 0.15rem;
   opacity: 0;
   transition: opacity 0.2s ease;
+}
+
+.edit-button {
+  color: var(--color-text-muted) !important;
+
+  &:hover {
+    color: var(--color-accent) !important;
+  }
+}
+
+.delete-button {
   color: #d64550 !important;
 }

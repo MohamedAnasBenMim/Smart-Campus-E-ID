@@ -1,0 +1,55 @@
+<div class="regles-role-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Contrôle d'accès</p>
+      <h1 class="page-title">Règles par rôle</h1>
+    </div>
+    <button mat-flat-button class="btn-primary" (click)="ouvrirCreation()">
+      <mat-icon>add</mat-icon>
+      Nouvelle règle
+    </button>
+  </header>
+
+  <p class="sous-titre">
+    Accès général par rôle — utile pour le personnel (surveillants, direction...) qui n'a pas d'emploi du
+    temps de cours. Élèves et profs sont normalement déjà couverts automatiquement par leurs cours.
+  </p>
+
+  @if (chargement()) {
+    <p class="loading-state">Chargement...</p>
+  } @else if (regles().length === 0) {
+    <div class="empty-state">
+      <mat-icon>admin_panel_settings</mat-icon>
+      <p>Aucune règle par rôle créée pour l'instant.</p>
+    </div>
+  } @else {
+    <div class="regles-list">
+      @for (r of regles(); track r.id) {
+        <div class="regle-card">
+          <div class="regle-role-badge">{{ libelleRole(r.role) }}</div>
+
+          <mat-icon class="regle-fleche">arrow_forward</mat-icon>
+
+          <div class="regle-info">
+            <mat-icon class="regle-icon">place</mat-icon>
+            <span>{{ nomZone(r.zoneId) }}</span>
+          </div>
+
+          <div class="regle-horaire">
+            <mat-icon>schedule</mat-icon>
+            {{ r.horaireDebut.substring(0, 5) }} — {{ r.horaireFin.substring(0, 5) }}
+          </div>
+
+          <div class="regle-actions">
+            <button mat-icon-button class="edit-button" (click)="ouvrirModification(r)">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button class="delete-button" (click)="supprimer(r)">
+              <mat-icon>delete_outline</mat-icon>
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

@@ -33,9 +33,14 @@
               <div class="zone-description">{{ z.description }}</div>
             }
           </div>
-          <button mat-icon-button class="delete-button" (click)="supprimer(z)">
-            <mat-icon>delete_outline</mat-icon>
-          </button>
+          <div class="zone-actions">
+            <button mat-icon-button class="edit-button" (click)="ouvrirModification(z)">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button class="delete-button" (click)="supprimer(z)">
+              <mat-icon>delete_outline</mat-icon>
+            </button>
+          </div>
         </div>
       }
     </div>

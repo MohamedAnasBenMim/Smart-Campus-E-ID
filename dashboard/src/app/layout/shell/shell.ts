@@ -22,11 +22,16 @@ interface MenuItem {
 const MENU_ITEMS: MenuItem[] = [
   { label: "Vue d'ensemble", icon: 'dashboard', route: '/overview', rolesAutorises: ['ADMIN', 'SURVEILLANT'] },
   { label: 'Personnes', icon: 'people', route: '/personnes', rolesAutorises: ['ADMIN'] },
+  { label: 'Cours', icon: 'menu_book', route: '/cours', rolesAutorises: ['ADMIN'] },
+  { label: 'Classes', icon: 'groups', route: '/classes', rolesAutorises: ['ADMIN'] },
+  { label: 'Emploi du temps', icon: 'calendar_view_week', route: '/emploi-du-temps', rolesAutorises: ['ADMIN', 'SURVEILLANT'] },
+  { label: 'Historique présence', icon: 'fact_check', route: '/historique-appels', rolesAutorises: ['ADMIN', 'SURVEILLANT'] },
   { label: 'Zones', icon: 'place', route: '/zones', rolesAutorises: ['ADMIN'] },
+  { label: 'Règles par rôle', icon: 'admin_panel_settings', route: '/regles-role', rolesAutorises: ['ADMIN'] },
   { label: "Règles d'accès", icon: 'rule', route: '/regles', rolesAutorises: ['ADMIN'] },
   { label: 'Alertes', icon: 'notifications_active', route: '/alertes', rolesAutorises: ['ADMIN', 'SURVEILLANT'] },
   {
-    label: 'Historique de présence',
+    label: 'Evenements accès',
     icon: 'history',
     route: '/historique',
     rolesAutorises: ['ADMIN', 'SURVEILLANT'],

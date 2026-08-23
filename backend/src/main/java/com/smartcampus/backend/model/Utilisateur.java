@@ -37,6 +37,15 @@ public class Utilisateur {
 
     private Instant creeLe = Instant.now();
 
+    /**
+     * NOUVEAU — "mot de passe oublié" : token temporaire à usage unique,
+     * envoyé par email. Null tant qu'aucune demande n'est en cours.
+     */
+    private String tokenReinitialisation;
+
+    /** Expiration du token — au-delà, il devient invalide même s'il est correct. */
+    private Instant tokenReinitialisationExpiration;
+
     public Utilisateur() {}
 
     public String getId() { return id; }
@@ -62,4 +71,10 @@ public class Utilisateur {
 
     public Instant getCreeLe() { return creeLe; }
     public void setCreeLe(Instant creeLe) { this.creeLe = creeLe; }
+
+    public String getTokenReinitialisation() { return tokenReinitialisation; }
+    public void setTokenReinitialisation(String tokenReinitialisation) { this.tokenReinitialisation = tokenReinitialisation; }
+
+    public Instant getTokenReinitialisationExpiration() { return tokenReinitialisationExpiration; }
+    public void setTokenReinitialisationExpiration(Instant tokenReinitialisationExpiration) { this.tokenReinitialisationExpiration = tokenReinitialisationExpiration; }
 }

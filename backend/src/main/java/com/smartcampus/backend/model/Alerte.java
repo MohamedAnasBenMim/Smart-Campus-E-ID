@@ -41,6 +41,15 @@ public class Alerte {
      */
     private String capturePhoto;
 
+    /**
+     * NOUVEAU : embedding du visage au moment de l'alerte (512 valeurs,
+     * InsightFace) — nécessaire pour le traitement spécialisé (confirmer
+     * une identité, corriger une erreur, enrôler depuis une alerte).
+     * Présent uniquement pour ACCES_NON_AUTORISE et IDENTITE_A_CONFIRMER
+     * — les seuls types où une action de ce genre a du sens.
+     */
+    private java.util.List<Double> embedding;
+
     public Alerte() {}
 
     public String getId() { return id; }
@@ -69,4 +78,7 @@ public class Alerte {
 
     public String getCapturePhoto() { return capturePhoto; }
     public void setCapturePhoto(String capturePhoto) { this.capturePhoto = capturePhoto; }
+
+    public java.util.List<Double> getEmbedding() { return embedding; }
+    public void setEmbedding(java.util.List<Double> embedding) { this.embedding = embedding; }
 }

@@ -49,4 +49,16 @@ export class Auth {
   isAdmin(): boolean {
     return this.getCurrentUser()?.role === 'ADMIN';
   }
+
+
+  motDePasseOublie(email: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${API_BASE}/auth/mot-de-passe-oublie`, { email });
+  }
+
+  reinitialiserMotDePasse(token: string, nouveauMotDePasse: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${API_BASE}/auth/reinitialiser-mot-de-passe`, {
+      token,
+      nouveauMotDePasse,
+    });
+  }
 }

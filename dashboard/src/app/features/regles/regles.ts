@@ -16,17 +16,15 @@ import { ConfirmDialog } from '../../shared/components/confirm-dialog/confirm-di
 interface DonneesDialogueRegle {
   personnes: Personne[];
   zones: Zone[];
+  regleExistante?: RegleAcces;
 }
 
-// ============================================================
-// Dialogue de création
-// ============================================================
 @Component({
   selector: 'app-creer-regle-dialog',
   standalone: true,
-  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatSelectModule],
+  imports: [ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatSelectModule, MatIconModule],
   template: `
-    <h2 mat-dialog-title>Nouvelle règle d'accès</h2>
+    <h2 mat-dialog-title>{{ modeModification ? "Modifier la règle d'accès" : "Nouvelle règle d'accès" }}</h2>
 
     <mat-dialog-content>
       <form [formGroup]="form" class="regle-form">
@@ -59,12 +57,19 @@ interface DonneesDialogueRegle {
           </label>
         </div>
       </form>
+
+      @if (erreur()) {
+        <div class="message-erreur">
+          <mat-icon>error_outline</mat-icon>
+          {{ erreur() }}
+        </div>
+      }
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
       <button mat-button (click)="dialogRef.close()">Annuler</button>
       <button mat-flat-button class="btn-primary" [disabled]="form.invalid" (click)="soumettre()">
-        Créer la règle
+        {{ modeModification ? 'Enregistrer les modifications' : 'Créer la règle' }}
       </button>
     </mat-dialog-actions>
   `,
@@ -104,35 +109,69 @@ interface DonneesDialogueRegle {
         background: var(--color-bg);
         color: var(--color-text);
       }
+      .message-erreur {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        background: #fbeaec;
+        color: #d64550;
+        padding: 0.75rem 1rem;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        margin-top: 0.75rem;
+
+        mat-icon {
+          font-size: 20px;
+          width: 20px;
+          height: 20px;
+          flex-shrink: 0;
+        }
+      }
     `,
   ],
 })
 export class CreerRegleDialog {
   form: FormGroup;
+  modeModification: boolean;
+  erreur = signal<string | null>(null);
 
   constructor(
     private fb: FormBuilder,
     private reglesService: ReglesService,
+    private snackBar: MatSnackBar,
     public dialogRef: MatDialogRef<CreerRegleDialog, boolean>,
     @Inject(MAT_DIALOG_DATA) public data: DonneesDialogueRegle,
   ) {
+    this.modeModification = !!data?.regleExistante;
+    const r = data?.regleExistante;
+
     this.form = this.fb.group({
-      personneId: ['', Validators.required],
-      zoneId: ['', Validators.required],
-      horaireDebut: ['08:00', Validators.required],
-      horaireFin: ['18:00', Validators.required],
+      personneId: [r?.personneId ?? '', Validators.required],
+      zoneId: [r?.zoneId ?? '', Validators.required],
+      horaireDebut: [r?.horaireDebut?.substring(0, 5) ?? '08:00', Validators.required],
+      horaireFin: [r?.horaireFin?.substring(0, 5) ?? '18:00', Validators.required],
     });
   }
 
   soumettre(): void {
     if (this.form.invalid) return;
-    this.reglesService.creer(this.form.value).subscribe(() => this.dialogRef.close(true));
+    this.erreur.set(null);
+
+    const appel$ = this.modeModification
+      ? this.reglesService.modifier(this.data.regleExistante!.id, this.form.value)
+      : this.reglesService.creer(this.form.value);
+
+    appel$.subscribe({
+      next: () => this.dialogRef.close(true),
+      error: (err:any) => {
+        const message = err?.error?.message ?? 'Une erreur est survenue.';
+        this.erreur.set(message);
+        this.snackBar.open(message, 'Fermer', { duration: 6000 });
+      },
+    });
   }
 }
 
-// ============================================================
-// Page principale
-// ============================================================
 @Component({
   selector: 'app-regles',
   standalone: true,
@@ -191,6 +230,21 @@ export class ReglesPage implements OnInit {
 
     ref.afterClosed().subscribe((succes) => {
       if (succes) this.charger();
+    });
+  }
+
+  ouvrirModification(regle: RegleAcces): void {
+    const ref = this.dialog.open(CreerRegleDialog, {
+      width: '480px',
+      panelClass: 'app-dialog',
+      data: { personnes: this.personnes(), zones: this.zones(), regleExistante: regle },
+    });
+
+    ref.afterClosed().subscribe((succes) => {
+      if (succes) {
+        this.snackBar.open('Règle modifiée.', 'Fermer', { duration: 3000 });
+        this.charger();
+      }
     });
   }
 

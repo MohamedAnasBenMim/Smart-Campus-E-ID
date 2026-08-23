@@ -1,0 +1,104 @@
+<div class="emploi-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Organisation pédagogique</p>
+      <h1 class="page-title">Emploi du temps</h1>
+    </div>
+  </header>
+
+  <div class="controles">
+    <mat-form-field appearance="outline" class="select-classe">
+      <mat-label>Classe</mat-label>
+      <mat-select [(ngModel)]="classeSelectionneeId">
+        @for (c of classes(); track c.id) {
+          <mat-option [value]="c.id">{{ c.nom }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-button-toggle-group [(ngModel)]="vue" class="toggle-vue">
+      <mat-button-toggle value="SEMAINE">Semaine</mat-button-toggle>
+      <mat-button-toggle value="JOUR">Jour</mat-button-toggle>
+    </mat-button-toggle-group>
+
+    @if (vue() === 'JOUR') {
+      <mat-form-field appearance="outline" class="select-jour">
+        <mat-label>Jour</mat-label>
+        <mat-select [(ngModel)]="jourSelectionne">
+          @for (j of jours; track j) {
+            <mat-option [value]="j">{{ j }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    }
+  </div>
+
+  @if (chargement()) {
+    <p class="loading-state">Chargement...</p>
+  } @else if (classes().length === 0) {
+    <div class="empty-state">
+      <mat-icon>event_note</mat-icon>
+      <p>Créez d'abord une classe et des cours pour voir un emploi du temps.</p>
+    </div>
+  } @else if (coursDeLaClasse().length === 0) {
+    <div class="empty-state">
+      <mat-icon>event_busy</mat-icon>
+      <p>Aucun cours pour cette classe pour l'instant.</p>
+    </div>
+  } @else if (vue() === 'SEMAINE') {
+    <!-- ============ VUE SEMAINE — grille ============ -->
+    <div class="grille-semaine" [style.grid-template-rows]="'auto repeat(' + creneauxTotal + ', 1fr)'">
+      <div class="case-vide"></div>
+      @for (jour of jours; track jour) {
+        <div class="entete-jour">{{ jour }}</div>
+      }
+
+      @for (heure of heuresAffichees; track heure) {
+        <div class="etiquette-heure" [style.grid-row]="((heure - 8) * 4) + 2 + ' / span 4'">
+          {{ heure }}h
+        </div>
+      }
+
+      @for (bloc of blocs(); track bloc.cours.id) {
+        <div
+          class="bloc-cours"
+          [style.grid-column]="bloc.colonne + 1"
+          [style.grid-row]="(bloc.ligneDebut + 1) + ' / ' + (bloc.ligneFin + 1)"
+          [style.background]="bloc.couleur"
+          (click)="ouvrirAppel(bloc)"
+        >
+          <div class="bloc-nom">{{ bloc.cours.nom }}</div>
+          <div class="bloc-detail">{{ nomPersonne(bloc.cours.profId) }}</div>
+          <div class="bloc-detail">{{ nomZone(bloc.cours.zoneId) }}</div>
+          <div class="bloc-horaire">{{ bloc.cours.heureDebut.substring(0, 5) }}-{{ bloc.cours.heureFin.substring(0, 5) }}</div>
+        </div>
+      }
+    </div>
+  } @else {
+    <!-- ============ VUE JOUR — liste chronologique ============ -->
+    <div class="vue-jour">
+      @if (blocsDuJour().length === 0) {
+        <p class="empty-jour">Aucun cours ce jour-là pour cette classe.</p>
+      } @else {
+        @for (bloc of blocsDuJour(); track bloc.cours.id) {
+          <div class="carte-jour" [style.border-left-color]="bloc.couleur" (click)="ouvrirAppel(bloc)">
+            <div class="carte-jour-horaire">
+              {{ bloc.cours.heureDebut.substring(0, 5) }} — {{ bloc.cours.heureFin.substring(0, 5) }}
+            </div>
+            <div class="carte-jour-corps">
+              <div class="carte-jour-nom">{{ bloc.cours.nom }}</div>
+              <div class="carte-jour-detail">
+                <mat-icon>person</mat-icon>
+                {{ nomPersonne(bloc.cours.profId) }}
+              </div>
+              <div class="carte-jour-detail">
+                <mat-icon>place</mat-icon>
+                {{ nomZone(bloc.cours.zoneId) }}
+              </div>
+            </div>
+          </div>
+        }
+      }
+    </div>
+  }
+</div>

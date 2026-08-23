@@ -1,0 +1,59 @@
+<div class="cours-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Emploi du temps</p>
+      <h1 class="page-title">Cours</h1>
+    </div>
+    <button mat-flat-button class="btn-primary" (click)="ouvrirCreation()">
+      <mat-icon>add</mat-icon>
+      Nouveau cours
+    </button>
+  </header>
+
+  @if (chargement()) {
+    <p class="loading-state">Chargement...</p>
+  } @else if (cours().length === 0) {
+    <div class="empty-state">
+      <mat-icon>menu_book</mat-icon>
+      <p>Aucun cours créé pour l'instant.</p>
+      <button mat-flat-button class="btn-primary" (click)="ouvrirCreation()">
+        Créer le premier cours
+      </button>
+    </div>
+  } @else {
+    <div class="cours-grid">
+      @for (c of cours(); track c.id) {
+        <div class="cours-card">
+        <div class="cours-header">
+  <div class="cours-nom">{{ c.nom }}</div>
+  <div class="cours-actions">
+    <button mat-icon-button class="edit-button" (click)="ouvrirModification(c)">
+      <mat-icon>edit</mat-icon>
+    </button>
+    <button mat-icon-button class="delete-button" (click)="supprimer(c)">
+      <mat-icon>delete_outline</mat-icon>
+    </button>
+  </div>
+</div>
+
+          <div class="cours-detail">
+            <mat-icon>person</mat-icon>
+            {{ nomPersonne(c.profId) }}
+          </div>
+          <div class="cours-detail">
+            <mat-icon>place</mat-icon>
+            {{ nomZone(c.zoneId) }}
+          </div>
+          <div class="cours-detail">
+            <mat-icon>schedule</mat-icon>
+            {{ c.jourSemaine }} — {{ c.heureDebut.substring(0, 5) }} à {{ c.heureFin.substring(0, 5) }}
+          </div>
+          <div class="cours-detail">
+            <mat-icon>groups</mat-icon>
+            {{ nomClasse(c.classeId) }}
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

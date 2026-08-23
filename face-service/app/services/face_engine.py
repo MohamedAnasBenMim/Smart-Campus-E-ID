@@ -626,7 +626,10 @@ def recognize_face(
                     "inconnu",
 
                 "raison":
-                    "aucune personne enrôlée"
+                    "aucune personne enrôlée",
+
+                "embedding":
+                    face.embedding.tolist(),
             }
 
         else:
@@ -672,6 +675,9 @@ def recognize_face(
                             best_similarity,
                             3
                         ),
+
+                    "embedding":
+                        face.embedding.tolist(),
                 }
 
             else:
@@ -687,7 +693,10 @@ def recognize_face(
                         round(
                             best_similarity,
                             3
-                        )
+                        ),
+
+                    "embedding":
+                        face.embedding.tolist(),
                 }
 
 

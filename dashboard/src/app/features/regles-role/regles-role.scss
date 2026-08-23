@@ -1,0 +1,130 @@
+.page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.sous-titre {
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  margin: 0 0 1.5rem;
+  max-width: 640px;
+}
+
+.loading-state {
+  color: var(--color-text-muted);
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  background: var(--color-surface);
+  border-radius: 16px;
+  color: var(--color-text-muted);
+  gap: 0.75rem;
+
+  mat-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+    color: var(--color-border);
+  }
+}
+
+.regles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.regle-card {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: var(--color-surface);
+  border-radius: 12px;
+  padding: 0.85rem 1.1rem;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.2s ease;
+
+  &:hover {
+    box-shadow: var(--shadow-card-hover);
+
+    .regle-actions {
+      opacity: 1;
+    }
+  }
+}
+
+.regle-role-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  padding: 0.3rem 0.7rem;
+  border-radius: 20px;
+  background: rgba(124, 111, 219, 0.14);
+  color: var(--color-accent-deep);
+  white-space: nowrap;
+}
+
+.regle-fleche {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  color: var(--color-text-muted);
+}
+
+.regle-info {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.88rem;
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.regle-icon {
+  font-size: 17px;
+  width: 17px;
+  height: 17px;
+  color: var(--color-accent);
+}
+
+.regle-horaire {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+
+  mat-icon {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+  }
+}
+
+.regle-actions {
+  display: flex;
+  gap: 0.15rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.edit-button {
+  color: var(--color-text-muted) !important;
+
+  &:hover {
+    color: var(--color-accent) !important;
+  }
+}
+
+.delete-button {
+  color: #d64550 !important;
+}

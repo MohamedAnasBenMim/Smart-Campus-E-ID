@@ -25,6 +25,23 @@ export interface RegleAcces {
   horaireFin: string;
 }
 
+export interface Classe {
+  id: string;
+  nom: string;
+  eleveIds: string[];
+}
+
+export interface Cours {
+  id: string;
+  nom: string;
+  classeId: string;
+  profId: string;
+  zoneId: string;
+  jourSemaine: 'LUNDI' | 'MARDI' | 'MERCREDI' | 'JEUDI' | 'VENDREDI' | 'SAMEDI';
+  heureDebut: string; // "HH:mm:ss"
+  heureFin: string;
+}
+
 export interface EvenementAcces {
   id: string;
   personneId: string | null;

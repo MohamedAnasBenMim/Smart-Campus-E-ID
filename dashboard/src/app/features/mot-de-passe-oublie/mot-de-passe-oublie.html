@@ -1,0 +1,40 @@
+<div class="page-auth">
+  <div class="carte-auth">
+    <h1 class="titre">Mot de passe oublié</h1>
+
+    @if (!messageConfirmation()) {
+      <p class="sous-titre">
+        Entrez l'adresse email associée à votre compte — vous recevrez un lien pour choisir un nouveau mot de passe.
+      </p>
+
+      <form [formGroup]="form" (ngSubmit)="soumettre()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" formControlName="email" placeholder="vous@exemple.com" />
+          <mat-icon matPrefix>mail</mat-icon>
+        </mat-form-field>
+
+        @if (erreur()) {
+          <div class="message-erreur">
+            <mat-icon>error_outline</mat-icon>
+            {{ erreur() }}
+          </div>
+        }
+
+        <button mat-flat-button class="btn-primary full-width" type="submit" [disabled]="form.invalid || envoiEnCours()">
+          {{ envoiEnCours() ? 'Envoi en cours...' : 'Envoyer le lien' }}
+        </button>
+      </form>
+    } @else {
+      <div class="confirmation">
+        <mat-icon class="icone-confirmation">mark_email_read</mat-icon>
+        <p>{{ messageConfirmation() }}</p>
+      </div>
+    }
+
+    <a routerLink="/login" class="lien-retour">
+      <mat-icon>arrow_back</mat-icon>
+      Retour à la connexion
+    </a>
+  </div>
+</div>
